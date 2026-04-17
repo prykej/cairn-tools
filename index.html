@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cairn — An Interactive Tutorial</title>
+<title>Cairn - An Interactive Tutorial</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 /* ===== RESET & BASE ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -661,6 +662,22 @@ h1, h2, h3, h4, h5, h6 { font-family: 'Cinzel', serif; line-height: 1.3; }
   font-size: 0.9rem;
 }
 
+.trait-tag {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  background: var(--parchment);
+  border: 1px solid var(--parchment-dark);
+  border-radius: 16px;
+  font-family: 'Lora', serif;
+  font-size: 0.85rem;
+  color: var(--ink);
+  cursor: help;
+}
+
+.trait-tag:hover {
+  background: var(--parchment-dark);
+}
+
 /* ===== WIZARD STEPS ===== */
 .wizard-step {
   display: none;
@@ -869,11 +886,50 @@ footer a {
 
 /* ===== PRINT ===== */
 @media print {
-  .nav-bar, .step-indicator, .step-nav, .btn, .tab-headers { display: none !important; }
-  .wizard-step { display: block !important; }
-  .char-sheet { break-inside: avoid; }
-  body { background: #fff; }
-  .parchment-box { box-shadow: none; border: 1px solid #ccc; }
+  /* Hide navigation and other elements */
+  .nav-bar, .hero, .tutorial-section, .step-indicator, .step-nav, .tab-headers, footer, #char-sheet-finish, .gear-table, .rules-reference, details, .dice-box {
+    display: none !important;
+  }
+
+  /* Hide all wizard steps EXCEPT step 8 (the character sheet) */
+  #step-0, #step-1, #step-2, #step-3, #step-4, #step-5, #step-6, #step-7 {
+    display: none !important;
+  }
+
+  /* Show step 8 (character sheet) */
+  #step-8 {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 1rem !important;
+    margin: 0 !important;
+    background: #fff !important;
+  }
+
+  /* Character sheet styling for print */
+  #char-sheet, .char-sheet {
+    display: block !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    border: 2px solid #3D2B1F !important;
+    max-width: 210mm !important;
+    margin: 0 auto !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  body {
+    background: #fff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .page-wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
 }
 </style>
 </head>
@@ -906,7 +962,7 @@ footer a {
   <div class="ornament">✦</div>
 
   <p class="tutorial-text">
-    <strong>Cairn</strong> is a rules-light, old-school-inspired tabletop roleplaying game. You play as adventurers — townsfolk, wanderers, and fortune-seekers — exploring a forest full of ancient ruins, hidden treasures, and terrible dangers. The game rewards cleverness over combat prowess: a well-placed trap or a hasty retreat will serve you better than a drawn-out sword fight.
+    <strong>Cairn</strong> is a rules-light, old-school-inspired tabletop roleplaying game. You play as adventurers - townsfolk, wanderers, and fortune-seekers - exploring a forest full of ancient ruins, hidden treasures, and terrible dangers. The game rewards cleverness over combat prowess: a well-placed trap or a hasty retreat will serve you better than a drawn-out sword fight.
   </p>
 
   <p class="tutorial-text">
@@ -914,7 +970,7 @@ footer a {
   </p>
 
   <div class="callout">
-    <strong>Key Principle:</strong> In Cairn, your <em>attributes</em> are used for <strong>Saves</strong> — when you face danger, the Warden calls for a Save. Roll a d20; if the result is <strong>equal to or less than</strong> your relevant attribute, you succeed. Attributes also represent your maximum Fatigue and your carrying capacity. A high Strength means you can carry more and resist physical effects. A high Dexterity lets you dodge and move quickly. A high Willpower protects you from fear and magic.
+    <strong>Key Principle:</strong> In Cairn, your <em>attributes</em> are used for <strong>Saves</strong> - when you face danger, the Warden calls for a Save. Roll a d20; if the result is <strong>equal to or less than</strong> your relevant attribute, you succeed. Attributes also represent your maximum Fatigue and your carrying capacity. A high Strength means you can carry more and resist physical effects. A high Dexterity lets you dodge and move quickly. A high Willpower protects you from fear and magic.
   </div>
 
   <!-- TABS FOR TUTORIAL SECTIONS -->
@@ -935,7 +991,7 @@ footer a {
       </p>
       <ol style="margin-left:1.5rem; margin-bottom:1.5rem; line-height:2;">
         <li><strong>The Warden describes the situation.</strong> You hear what your character perceives.</li>
-        <li><strong>You say what your character does.</strong> No turns, no initiative — just the fiction.</li>
+        <li><strong>You say what your character does.</strong> No turns, no initiative - just the fiction.</li>
         <li><strong>The Warden tells you the consequence.</strong> If there's risk, dice are rolled.</li>
       </ol>
 
@@ -945,11 +1001,11 @@ footer a {
       </div>
 
       <p class="tutorial-text">
-        Cairn uses only <strong>d6s and d20s</strong>. Most rolls are <strong>3d6</strong> for character creation and <strong>d20</strong> for saves. The system avoids the "math bloat" of larger games — every roll is quick, and the stakes are always clear.
+        Cairn uses only <strong>d6s and d20s</strong>. Most rolls are <strong>3d6</strong> for character creation and <strong>d20</strong> for saves. The system avoids the "math bloat" of larger games - every roll is quick, and the stakes are always clear.
       </p>
 
       <div class="callout callout-gold">
-        <strong>Warden's Wisdom:</strong> Cairn treats the game world as real. If something would logically happen, it happens — no roll needed. A locked door stops you. A fire burns. A falling rock crushes. The fiction comes first; the mechanics support it.
+        <strong>Warden's Wisdom:</strong> Cairn treats the game world as real. If something would logically happen, it happens - no roll needed. A locked door stops you. A fire burns. A falling rock crushes. The fiction comes first; the mechanics support it.
       </div>
     </div>
 
@@ -957,7 +1013,7 @@ footer a {
     <div class="tab-panel" id="tut-attributes">
       <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">The Three Attributes</h3>
       <p class="tutorial-text">
-        Every character has <strong>three</strong> attributes, each generated by rolling <strong>3d6</strong> (you may then swap any two results). These numbers define your character's physical and mental resilience — and your ability to resist harm.
+        Every character has <strong>three</strong> attributes, each generated by rolling <strong>3d6</strong> (you may then swap any two results). These numbers define your character's physical and mental resilience - and your ability to resist harm.
       </p>
 
       <table class="med-table">
@@ -977,11 +1033,11 @@ footer a {
 
       <div class="rule-box" style="margin-top:1.5rem;">
         <h4>⚔️ Attributes &amp; Saves</h4>
-        <p>When the outcome of an action is <strong>uncertain and risky</strong>, you make a <strong>Save</strong>: roll <strong>1d20</strong> and compare to the relevant attribute. If you roll <strong>equal to or under</strong> the attribute, you succeed. A 1 is always a success; a 20 is always a failure. Higher attributes make you more resilient — a character with 16 DEX is remarkably agile, while one with 8 DEX is at greater risk when dodging.</p>
+        <p>When the outcome of an action is <strong>uncertain and risky</strong>, you make a <strong>Save</strong>: roll <strong>1d20</strong> and compare to the relevant attribute. If you roll <strong>equal to or under</strong> the attribute, you succeed. A 1 is always a success; a 20 is always a failure. Higher attributes make you more resilient - a character with 16 DEX is remarkably agile, while one with 8 DEX is at greater risk when dodging.</p>
       </div>
 
       <div class="callout">
-        <strong>Attributes Are Not Universal Descriptors:</strong> A character with low STR isn't hopelessly weak — they can still attempt to lift a heavy door or survive a deadly fight! Their risk is simply higher. Cairn doesn't use attribute modifiers (+1, +2, etc.). The raw number is what matters for saves.
+        <strong>Attributes Are Not Universal Descriptors:</strong> A character with low STR isn't hopelessly weak - they can still attempt to lift a heavy door or survive a deadly fight! Their risk is simply higher. Cairn doesn't use attribute modifiers (+1, +2, etc.). The raw number is what matters for saves.
       </div>
     </div>
 
@@ -990,7 +1046,7 @@ footer a {
       <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Combat &amp; Hit Protection</h3>
 
       <p class="tutorial-text">
-        Combat in Cairn is <strong>fast and dangerous</strong>. A Round is roughly ten seconds of in-game time, with each side taking turns. During the first round, each PC must make a <strong>DEX save</strong> to act — those who fail lose their turn. After that, PCs act, then opponents, alternating until combat ends.
+        Combat in Cairn is <strong>fast and dangerous</strong>. A Round is roughly ten seconds of in-game time, with each side taking turns. During the first round, each PC must make a <strong>DEX save</strong> to act - those who fail lose their turn. After that, PCs act, then opponents, alternating until combat ends.
       </p>
 
       <div class="rule-box">
@@ -1000,16 +1056,16 @@ footer a {
 
       <h4 style="font-family:'Cinzel',serif; font-size:1rem; margin:1rem 0 0.5rem; color:var(--green-dark);">Hit Protection (HP)</h4>
       <p class="tutorial-text">
-        HP reflects your ability to <em>avoid damage in combat</em> — it is not health or fortitude. When you take damage, HP is reduced first. When HP reaches 0, any further damage reduces your <strong>STR</strong>. If STR reaches 0, the character <strong>dies</strong>. If DEX reaches 0, they are <strong>paralyzed</strong>. If WIL reaches 0, they are <strong>delirious</strong>.
+        HP reflects your ability to <em>avoid damage in combat</em> - it is not health or fortitude. When you take damage, HP is reduced first. When HP reaches 0, any further damage reduces your <strong>STR</strong>. If STR reaches 0, the character <strong>dies</strong>. If DEX reaches 0, they are <strong>paralyzed</strong>. If WIL reaches 0, they are <strong>delirious</strong>.
       </p>
 
       <div class="rule-box">
         <h4>💀 Critical Damage</h4>
-        <p>Damage that reduces HP below zero is subtracted from STR by the remaining amount. The target must then immediately make a <strong>STR save</strong> using their new, lower STR score. On a failure, they suffer <strong>Critical Damage</strong> — they cannot do anything but crawl weakly, grasping for life. If given aid (such as bandages), they stabilize. If left untreated, they die within the hour.</p>
+        <p>Damage that reduces HP below zero is subtracted from STR by the remaining amount. The target must then immediately make a <strong>STR save</strong> using their new, lower STR score. On a failure, they suffer <strong>Critical Damage</strong> - they cannot do anything but crawl weakly, grasping for life. If given aid (such as bandages), they stabilize. If left untreated, they die within the hour.</p>
       </div>
 
       <div class="callout callout-gold">
-        <strong>Attack Modifiers:</strong> Fighting from a position of weakness (cover, bound hands) makes the attack <strong>Impaired</strong> — roll d4 damage regardless of weapon. Fighting from advantage (helpless foe, daring maneuver) makes the attack <strong>Enhanced</strong> — roll d12 damage instead. Unarmed attacks always do d4 damage.
+        <strong>Attack Modifiers:</strong> Fighting from a position of weakness (cover, bound hands) makes the attack <strong>Impaired</strong> - roll d4 damage regardless of weapon. Fighting from advantage (helpless foe, daring maneuver) makes the attack <strong>Enhanced</strong> - roll d12 damage instead. Unarmed attacks always do d4 damage.
       </div>
 
       <h4 style="font-family:'Cinzel',serif; font-size:1rem; margin:1rem 0 0.5rem; color:var(--green-dark);">Damage &amp; Armor</h4>
@@ -1023,16 +1079,16 @@ footer a {
       <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Exploration &amp; Encumbrance</h3>
 
       <p class="tutorial-text">
-        Exploration is the heart of Cairn. You venture into the forest, into ruins, into caves — seeking treasure, knowledge, or simply survival. The game uses <strong>encumbrance slots</strong> to manage what you carry. Each character has a limited number of slots, and every item takes up space.
+        Exploration is the heart of Cairn. You venture into the forest, into ruins, into caves - seeking treasure, knowledge, or simply survival. The game uses <strong>encumbrance slots</strong> to manage what you carry. Each character has a limited number of slots, and every item takes up space.
       </p>
 
       <div class="rule-box">
         <h4>🎒 Encumbrance</h4>
-        <p>Most items take <strong>1 slot</strong>. Bulky items take <strong>2 slots</strong>. You can carry up to 10 slots worth of gear. If you exceed your carrying capacity, you suffer penalties — you become slow and vulnerable. What you choose to bring matters.</p>
+        <p>Most items take <strong>1 slot</strong>. Bulky items take <strong>2 slots</strong>. You can carry up to 10 slots worth of gear. If you exceed your carrying capacity, you suffer penalties - you become slow and vulnerable. What you choose to bring matters.</p>
       </div>
 
       <p class="tutorial-text">
-        <strong>Light</strong> is a resource. Torches burn for a set duration. A lantern is precious. Wandering in the dark is deadly. Managing your light sources creates natural tension and pacing — you can't explore forever, and every moment in the dungeon costs something.
+        <strong>Light</strong> is a resource. Torches burn for a set duration. A lantern is precious. Wandering in the dark is deadly. Managing your light sources creates natural tension and pacing - you can't explore forever, and every moment in the dungeon costs something.
       </p>
 
       <h4 style="font-family:'Cinzel',serif; font-size:1rem; margin:1rem 0 0.5rem; color:var(--green-dark);">Reaction &amp; Morale</h4>
@@ -1041,7 +1097,7 @@ footer a {
       </p>
 
       <div class="callout">
-        <strong>Play Smart:</strong> Cairn rewards creative problem-solving. Talk to the goblins. Set a trap. Collapse the ceiling. Retreat and return with a plan. The dungeon is always there — your character might not be.
+        <strong>Play Smart:</strong> Cairn rewards creative problem-solving. Talk to the goblins. Set a trap. Collapse the ceiling. Retreat and return with a plan. The dungeon is always there - your character might not be.
       </div>
     </div>
 
@@ -1050,25 +1106,25 @@ footer a {
       <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Advancement &amp; Growth</h3>
 
       <p class="tutorial-text">
-        Cairn has <strong>no levels and no experience points</strong>. Your character grows through what they acquire, what they learn, and how the world changes them. A character who finds a magic sword is fundamentally more capable — not because of a number on a sheet, but because of the tool they now possess.
+        Cairn has <strong>no levels and no experience points</strong>. Your character grows through what they acquire, what they learn, and how the world changes them. A character who finds a magic sword is fundamentally more capable - not because of a number on a sheet, but because of the tool they now possess.
       </p>
 
       <div class="rule-box">
         <h4>📈 How Characters Grow</h4>
         <ul style="margin-left:1rem; line-height:2;">
-          <li><strong>Treasure</strong> — Gold buys better gear, hirelings, and strongholds</li>
-          <li><strong>Artifacts</strong> — Magical items grant strange and potent abilities</li>
-          <li><strong>Scars</strong> — Surviving critical wounds may permanently alter your attributes</li>
-          <li><strong>Reputation</strong> — Your deeds open (or close) doors across the region</li>
+          <li><strong>Treasure</strong> - Gold buys better gear, hirelings, and strongholds</li>
+          <li><strong>Artifacts</strong> - Magical items grant strange and potent abilities</li>
+          <li><strong>Scars</strong> - Surviving critical wounds may permanently alter your attributes</li>
+          <li><strong>Reputation</strong> - Your deeds open (or close) doors across the region</li>
         </ul>
       </div>
 
       <p class="tutorial-text">
-        <strong>Scars</strong> deserve special mention. When a character reaches 0 STR but survives, they roll on the Scars table. This permanently changes a character — sometimes for the worse, sometimes in surprising ways. A scar is a story, and your character becomes more interesting with each one they survive.
+        <strong>Scars</strong> deserve special mention. When a character reaches 0 STR but survives, they roll on the Scars table. This permanently changes a character - sometimes for the worse, sometimes in surprising ways. A scar is a story, and your character becomes more interesting with each one they survive.
       </p>
 
       <div class="callout callout-gold">
-        <strong>Retirement:</strong> When your character has accumulated enough wealth and stories, they can retire — becoming an NPC in the world. Their stronghold becomes a base for future adventurers. This isn't failure; it's legacy.
+        <strong>Retirement:</strong> When your character has accumulated enough wealth and stories, they can retire - becoming an NPC in the world. Their stronghold becomes a base for future adventurers. This isn't failure; it's legacy.
       </div>
     </div>
   </div>
@@ -1079,7 +1135,7 @@ footer a {
 <!-- ====================================================================== -->
 <section id="forge" class="parchment-box">
   <h2 class="section-title">The Character Forge</h2>
-  <p class="section-subtitle">Step into the wilds — craft your adventurer</p>
+  <p class="section-subtitle">Step into the wilds - craft your adventurer</p>
 
   <div class="ornament">⚒️</div>
 
@@ -1099,18 +1155,18 @@ footer a {
   <div class="wizard-step active" id="step-0">
     <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Welcome to the Forge</h3>
     <p class="tutorial-text">
-      Creating a Cairn character is quick — most of the work is done by the dice. In five steps, you'll have a fully playable adventurer ready to explore the forest and its ancient secrets.
+      Creating a Cairn character is quick - most of the work is done by the dice. In five steps, you'll have a fully playable adventurer ready to explore the forest and its ancient secrets.
     </p>
     <div class="rule-box">
       <h4>📋 The Seven Steps</h4>
       <ol style="margin-left:1.5rem; line-height:2.2;">
-        <li><strong>Roll Attributes</strong> — Roll 3d6 for each of the three attributes</li>
-        <li><strong>Roll Hit Protection</strong> — Roll 1d6 for your HP</li>
-        <li><strong>Roll Your Background</strong> — Roll d100 to determine your past life and starting gear</li>
-        <li><strong>Roll Starting Gold &amp; Name</strong> — 3d6 gold pieces, then roll or choose a name</li>
-        <li><strong>Roll Armor</strong> — Roll d6 on the Armor table</li>
-        <li><strong>Roll Weapon</strong> — Roll d6 on the Weapons table</li>
-        <li><strong>Additional Gear</strong> — Roll d100 (roll again if no armor or background grants it)</li>
+        <li><strong>Roll Attributes</strong> - Roll 3d6 for each of the three attributes</li>
+        <li><strong>Roll Hit Protection</strong> - Roll 1d6 for your HP</li>
+        <li><strong>Roll Your Background</strong> - Roll d100 to determine your past life and starting gear</li>
+        <li><strong>Roll Starting Gold &amp; Name</strong> - 3d6 gold pieces, then roll or choose a name</li>
+        <li><strong>Roll Armor</strong> - Roll d6 on the Armor table</li>
+        <li><strong>Roll Weapon</strong> - Roll d6 on the Weapons table</li>
+        <li><strong>Additional Gear</strong> - Roll d100 (roll again if no armor or background grants it)</li>
       </ol>
     </div>
     <div class="step-nav">
@@ -1131,7 +1187,7 @@ footer a {
       <table class="med-table">
         <thead><tr><th>d6</th><th>Armor</th></tr></thead>
         <tbody>
-          <tr><td>1</td><td>None — Roll for Additional Gear</td></tr>
+          <tr><td>1</td><td>None - Roll for Additional Gear</td></tr>
           <tr><td>2</td><td>Shield (+1 Armor)</td></tr>
           <tr><td>3</td><td>Helmet (+1 Armor)</td></tr>
           <tr><td>4</td><td>Gambeson (+1 Armor)</td></tr>
@@ -1148,14 +1204,14 @@ footer a {
     <div style="display:flex; justify-content:center; gap:0.75rem; margin-bottom:1rem;">
       <div class="die-face" id="armor-die">?</div>
       <div style="display:flex; align-items:center; font-family:'Cinzel',serif; font-size:1.4rem; font-weight:900; color:var(--green-dark);">
-        <span id="armor-result-label">—</span>
+        <span id="armor-result-label">-</span>
       </div>
     </div>
 
     <div id="armor-detail" style="display:none; text-align:center; margin:1rem 0;">
       <div style="background:var(--parchment-light); border:2px solid var(--gold); border-radius:4px; padding:1rem; display:inline-block;">
-        <div style="font-family:'Cinzel',serif; font-size:1.1rem; font-weight:700; color:var(--ink);" id="armor-detail-name">—</div>
-        <div style="font-family:'Cinzel',serif; font-size:0.9rem; color:var(--gold);" id="armor-detail-stats">—</div>
+        <div style="font-family:'Cinzel',serif; font-size:1.1rem; font-weight:700; color:var(--ink);" id="armor-detail-name">-</div>
+        <div style="font-family:'Cinzel',serif; font-size:0.9rem; color:var(--gold);" id="armor-detail-stats">-</div>
       </div>
     </div>
 
@@ -1173,7 +1229,7 @@ footer a {
   <div class="wizard-step" id="step-6">
     <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Step Six: Roll Weapon</h3>
     <p class="tutorial-text" style="text-align:center;">
-      Roll <strong>d6</strong> on the Weapons table to arm your adventurer. Each entry represents a category — pick a specific weapon that fits the description.
+      Roll <strong>d6</strong> on the Weapons table to arm your adventurer. Each entry represents a category - pick a specific weapon that fits the description.
     </p>
 
     <div class="rule-box" style="margin:1rem 0;">
@@ -1198,19 +1254,19 @@ footer a {
     <div style="display:flex; justify-content:center; gap:0.75rem; margin-bottom:1rem;">
       <div class="die-face" id="weapon-die">?</div>
       <div style="display:flex; align-items:center; font-family:'Cinzel',serif; font-size:1.4rem; font-weight:900; color:var(--green-dark);">
-        <span id="weapon-result-label">—</span>
+        <span id="weapon-result-label">-</span>
       </div>
     </div>
 
     <div id="weapon-detail" style="display:none; text-align:center; margin:1rem 0;">
       <div style="background:var(--parchment-light); border:2px solid var(--gold); border-radius:4px; padding:1rem; display:inline-block;">
-        <div style="font-family:'Cinzel',serif; font-size:1.1rem; font-weight:700; color:var(--ink);" id="weapon-detail-name">—</div>
-        <div style="font-family:'Cinzel',serif; font-size:0.9rem; color:var(--gold);" id="weapon-detail-stats">—</div>
+        <div style="font-family:'Cinzel',serif; font-size:1.1rem; font-weight:700; color:var(--ink);" id="weapon-detail-name">-</div>
+        <div style="font-family:'Cinzel',serif; font-size:0.9rem; color:var(--gold);" id="weapon-detail-stats">-</div>
       </div>
     </div>
 
     <div class="callout" style="margin-top:1rem;">
-      <strong>Choose Your Weapon:</strong> The roll determines the category. Pick a specific weapon from that row — e.g., if you roll 2, you might choose a sword, an axe, a mace, or a flail. The Warden has final say on flavor.
+      <strong>Choose Your Weapon:</strong> The roll determines the category. Pick a specific weapon from that row - e.g., if you roll 2, you might choose a sword, an axe, a mace, or a flail. The Warden has final say on flavor.
     </div>
 
     <div class="step-nav">
@@ -1237,7 +1293,7 @@ footer a {
     </div>
 
     <div id="addgear-bg-note" class="callout callout-gold" style="display:none; margin-bottom:1rem;">
-      <strong>Background Bonus:</strong> Your background includes "Random Additional Gear" — you get an extra roll.
+      <strong>Background Bonus:</strong> Your background includes "Random Additional Gear" - you get an extra roll.
     </div>
 
     <div id="addgear-detail" style="margin:1rem 0; display:none;">
@@ -1253,7 +1309,7 @@ footer a {
     <div style="display:flex; justify-content:center; gap:0.75rem; margin-bottom:1rem;" id="addgear-die-container">
       <div class="die-face" id="addgear-die" style="font-size:1.2rem;">?</div>
       <div style="display:flex; align-items:center; font-family:'Cinzel',serif; font-size:1.2rem; font-weight:700; color:var(--green-dark);">
-        <span id="addgear-just-rolled">—</span>
+        <span id="addgear-just-rolled">-</span>
       </div>
     </div>
 
@@ -1274,7 +1330,7 @@ footer a {
   <div class="wizard-step" id="step-1">
     <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Step One: Roll Your Attributes</h3>
     <p class="tutorial-text" style="text-align:center;">
-      Roll <strong>3d6</strong> for each attribute. The result is your score — and your defense against attacks of that type. Click the button to roll all three at once, or roll them individually.
+      Roll <strong>3d6</strong> for each attribute. The result is your score - and your defense against attacks of that type. Click the button to roll all three at once, or roll them individually.
     </p>
 
     <div style="text-align:center; margin-bottom:1rem;">
@@ -1285,19 +1341,19 @@ footer a {
       <div class="attr-card" id="attr-str">
         <div class="attr-name">Strength</div>
         <div class="attr-abbr">STR</div>
-        <div class="attr-value" id="val-str">—</div>
+        <div class="attr-value" id="val-str">-</div>
         <div class="attr-dice" id="dice-str"></div>
       </div>
       <div class="attr-card" id="attr-dex">
         <div class="attr-name">Dexterity</div>
         <div class="attr-abbr">DEX</div>
-        <div class="attr-value" id="val-dex">—</div>
+        <div class="attr-value" id="val-dex">-</div>
         <div class="attr-dice" id="dice-dex"></div>
       </div>
       <div class="attr-card" id="attr-wil">
         <div class="attr-name">Willpower</div>
         <div class="attr-abbr">WIL</div>
-        <div class="attr-value" id="val-wil">—</div>
+        <div class="attr-value" id="val-wil">-</div>
         <div class="attr-dice" id="dice-wil"></div>
       </div>
     </div>
@@ -1321,7 +1377,7 @@ footer a {
   <div class="wizard-step" id="step-2">
     <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Step Two: Roll Hit Protection</h3>
     <p class="tutorial-text" style="text-align:center;">
-      Roll <strong>1d6</strong> for your Hit Protection. This represents your ability to avoid serious injury — not your health, but your luck, stamina, and reflexes in combat.
+      Roll <strong>1d6</strong> for your Hit Protection. This represents your ability to avoid serious injury - not your health, but your luck, stamina, and reflexes in combat.
     </p>
 
     <div style="text-align:center; margin:1.5rem 0;">
@@ -1331,7 +1387,7 @@ footer a {
     <div style="display:flex; justify-content:center; gap:0.75rem; margin-bottom:1rem;">
       <div class="die-face" id="hp-die">?</div>
       <div style="display:flex; align-items:center; font-family:'Cinzel',serif; font-size:1.8rem; font-weight:900; color:var(--red-soft);">
-        HP: <span id="hp-value">—</span>
+        HP: <span id="hp-value">-</span>
       </div>
     </div>
 
@@ -1349,7 +1405,7 @@ footer a {
   <div class="wizard-step" id="step-3">
     <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Step Three: Roll Your Background</h3>
     <p class="tutorial-text" style="text-align:center;">
-      Your background represents what you did before becoming an adventurer. It determines your starting gear — the tools of your former trade. Roll <strong>d100</strong> (or 2d10 for tens and ones) and let fate decide who you were.
+      Your background represents what you did before becoming an adventurer. It determines your starting gear - the tools of your former trade. Roll <strong>d100</strong> (or 2d10 for tens and ones) and let fate decide who you were.
     </p>
 
     <div style="text-align:center; margin:1.5rem 0;">
@@ -1360,7 +1416,7 @@ footer a {
     <div style="display:flex; justify-content:center; gap:0.75rem; margin-bottom:1rem;">
       <div class="die-face" id="bg-die" style="font-size:1.2rem;">?</div>
       <div style="display:flex; align-items:center; font-family:'Cinzel',serif; font-size:1.4rem; font-weight:900; color:var(--green-dark);">
-        <span id="bg-roll-label">—</span>
+        <span id="bg-roll-label">-</span>
       </div>
     </div>
 
@@ -1397,7 +1453,7 @@ footer a {
         <div class="die-face" id="gold-d3">?</div>
       </div>
       <div style="text-align:center; font-family:'Cinzel',serif; font-size:1.5rem; font-weight:700; color:var(--gold);">
-        <span id="gold-value">—</span> gp
+        <span id="gold-value">-</span> gp
       </div>
     </div>
 
@@ -1413,7 +1469,7 @@ footer a {
     <div style="margin-top:1.5rem;">
       <h4 style="font-family:'Cinzel',serif; font-size:1rem; color:var(--green-dark); margin-bottom:0.5rem;">Roll Your Name</h4>
       <p class="tutorial-text" style="text-align:center;">
-        Roll d100 on the name tables to discover who you are. The forest already knows your name — now you will too.
+        Roll d100 on the name tables to discover who you are. The forest already knows your name - now you will too.
       </p>
 
       <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:0.75rem; margin:1rem 0;">
@@ -1426,17 +1482,17 @@ footer a {
         <div style="text-align:center;">
           <div style="font-family:'Cinzel',serif; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-light); margin-bottom:0.25rem;">Given (d100)</div>
           <div class="die-face" id="name-given-die" style="font-size:1rem; margin-bottom:0.25rem;">?</div>
-          <div id="name-given-label" style="font-family:'Cinzel',serif; font-size:1.1rem; font-weight:700; color:var(--green-dark);">—</div>
+          <div id="name-given-label" style="font-family:'Cinzel',serif; font-size:1.1rem; font-weight:700; color:var(--green-dark);">-</div>
         </div>
         <div style="text-align:center;">
           <div style="font-family:'Cinzel',serif; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-light); margin-bottom:0.25rem;">Family (d100)</div>
           <div class="die-face" id="name-family-die" style="font-size:1rem; margin-bottom:0.25rem;">?</div>
-          <div id="name-family-label" style="font-family:'Cinzel',serif; font-size:1.1rem; font-weight:700; color:var(--green-dark);">—</div>
+          <div id="name-family-label" style="font-family:'Cinzel',serif; font-size:1.1rem; font-weight:700; color:var(--green-dark);">-</div>
         </div>
       </div>
 
       <div style="text-align:center; margin-top:0.75rem;">
-        <div style="font-family:'UnifrakturMaguntia',cursive; font-size:clamp(1.6rem,4vw,2.2rem); color:var(--ink);" id="name-full-display">—</div>
+        <div style="font-family:'UnifrakturMaguntia',cursive; font-size:clamp(1.6rem,4vw,2.2rem); color:var(--ink);" id="name-full-display">-</div>
       </div>
     </div>
 
@@ -1451,37 +1507,37 @@ footer a {
     <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark); text-align:center;">Your Adventurer</h3>
 
     <div class="char-sheet" id="char-sheet">
-      <div class="char-name-display" id="sheet-name">—</div>
-      <div class="char-bg-display" id="sheet-bg">—</div>
+      <div class="char-name-display" id="sheet-name">-</div>
+      <div class="char-bg-display" id="sheet-bg">-</div>
 
       <div class="sheet-section">
         <h5>Attributes</h5>
         <div class="sheet-attrs">
-          <div class="sheet-attr"><div class="sa-label">STR</div><div class="sa-val" id="sheet-str">—</div></div>
-          <div class="sheet-attr"><div class="sa-label">DEX</div><div class="sa-val" id="sheet-dex">—</div></div>
-          <div class="sheet-attr"><div class="sa-label">WIL</div><div class="sa-val" id="sheet-wil">—</div></div>
+          <div class="sheet-attr"><div class="sa-label">STR</div><div class="sa-val" id="sheet-str">-</div></div>
+          <div class="sheet-attr"><div class="sa-label">DEX</div><div class="sa-val" id="sheet-dex">-</div></div>
+          <div class="sheet-attr"><div class="sa-label">WIL</div><div class="sa-val" id="sheet-wil">-</div></div>
         </div>
       </div>
 
       <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:1.5rem;">
         <div class="sheet-hp" style="flex:1; min-width:120px;">
           <span class="hp-label">HP</span>
-          <span class="hp-val" id="sheet-hp">—</span>
+          <span class="hp-val" id="sheet-hp">-</span>
         </div>
         <div class="sheet-gold" style="flex:1; min-width:120px;">
           <span class="gold-label">Gold</span>
-          <span class="gold-val" id="sheet-gold">—</span>
+          <span class="gold-val" id="sheet-gold">-</span>
         </div>
       </div>
 
       <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:1.5rem;" id="sheet-armor-weapon-row">
         <div class="sheet-hp" style="flex:1; min-width:140px;">
           <span class="hp-label">Armor</span>
-          <span class="hp-val" id="sheet-armor" style="font-size:1.2rem;">—</span>
+          <span class="hp-val" id="sheet-armor" style="font-size:1.2rem;">-</span>
         </div>
         <div class="sheet-gold" style="flex:1; min-width:140px;">
           <span class="gold-label">Weapon</span>
-          <span class="gold-val" id="sheet-weapon" style="font-size:1rem;">—</span>
+          <span class="gold-val" id="sheet-weapon" style="font-size:1rem;">-</span>
         </div>
       </div>
 
@@ -1492,7 +1548,7 @@ footer a {
     </div>
 
     <div style="text-align:center; margin-top:1.5rem; display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
-      <button class="btn" onclick="printSheet()">🖨️ Print Sheet</button>
+      <button class="btn" onclick="printSheet()">📄 Download PDF (Official Sheet)</button>
       <button class="btn btn-red" onclick="resetForge()">🔄 Create New Character</button>
     </div>
   </div>
@@ -1522,7 +1578,7 @@ footer a {
           <li><strong>WIL Save:</strong> Persuading, deceiving, intimidating, spellcasting, resisting charm</li>
         </ul>
         <div class="callout" style="margin-top:1rem;">
-          <strong>Roll Under:</strong> You succeed if you roll <em>equal to or less than</em> your attribute score. A STR 12 character succeeds on a STR save with a roll of 1–12.
+          <strong>Roll Under:</strong> You succeed if you roll <em>equal to or less than</em> your attribute score. A STR 12 character succeeds on a STR save with a roll of 1-12.
         </div>
       </div>
     </div>
@@ -1549,7 +1605,7 @@ footer a {
             <tr><td>Spear</td><td>1d6</td><td>Reach, can be thrown</td></tr>
             <tr><td>Bow</td><td>1d6</td><td>Ranged, requires arrows</td></tr>
             <tr><td>Crossbow</td><td>1d8</td><td>Ranged, slow to reload</td></tr>
-            <tr><td>Unarmed</td><td>1d4</td><td>—</td></tr>
+            <tr><td>Unarmed</td><td>1d4</td><td>-</td></tr>
           </tbody>
         </table>
         <div class="callout callout-gold" style="margin-top:1rem;">
@@ -1578,7 +1634,7 @@ footer a {
             <tr><td>Shield</td><td>+1</td><td>1</td></tr>
           </tbody>
         </table>
-        <p style="margin-top:1rem;"><strong>Note:</strong> Armor does not make you harder to hit — it reduces the damage that gets through. Your <em>attribute</em> is your defense. Armor is mitigation.</p>
+        <p style="margin-top:1rem;"><strong>Note:</strong> Armor does not make you harder to hit - it reduces the damage that gets through. Your <em>attribute</em> is your defense. Armor is mitigation.</p>
       </div>
     </div>
   </div>
@@ -1598,7 +1654,7 @@ footer a {
           <li><strong>0 slots:</strong> Small items (rings, coins, keys, notes)</li>
         </ul>
         <div class="callout" style="margin-top:1rem;">
-          <strong>Overburdened:</strong> If you exceed 10 slots, you cannot move. You must drop items to continue. Choose wisely what you carry — and what you leave behind.
+          <strong>Overburdened:</strong> If you exceed 10 slots, you cannot move. You must drop items to continue. Choose wisely what you carry - and what you leave behind.
         </div>
       </div>
     </div>
@@ -1616,11 +1672,11 @@ footer a {
         <table class="med-table" style="margin-top:0.5rem;">
           <thead><tr><th>2d6</th><th>Reaction</th></tr></thead>
           <tbody>
-            <tr><td>2</td><td>Hostile — attacks immediately</td></tr>
-            <tr><td>3–5</td><td>Unfriendly — may attack if provoked</td></tr>
-            <tr><td>6–8</td><td>Neutral — uncertain, wary</td></tr>
-            <tr><td>9–11</td><td>Friendly — open to parley</td></tr>
-            <tr><td>12</td><td>Helpful — offers aid freely</td></tr>
+            <tr><td>2</td><td>Hostile - attacks immediately</td></tr>
+            <tr><td>3-5</td><td>Unfriendly - may attack if provoked</td></tr>
+            <tr><td>6-8</td><td>Neutral - uncertain, wary</td></tr>
+            <tr><td>9-11</td><td>Friendly - open to parley</td></tr>
+            <tr><td>12</td><td>Helpful - offers aid freely</td></tr>
           </tbody>
         </table>
         <p style="margin-top:1rem;"><strong>Morale (2d6):</strong> When creatures take losses or face overwhelming force, roll 2d6 vs their Morale score. If the roll exceeds their Morale, they flee or surrender.</p>
@@ -1660,15 +1716,15 @@ footer a {
         <table class="med-table" style="margin-top:0.5rem;">
           <thead><tr><th>1d6</th><th>Scar</th></tr></thead>
           <tbody>
-            <tr><td>1</td><td>Lost limb — permanently reduce STR by 1d4</td></tr>
-            <tr><td>2</td><td>Scarred face — permanently reduce WIL by 1d4</td></tr>
-            <tr><td>3</td><td>Battered body — permanently reduce STR by 1d4</td></tr>
-            <tr><td>4</td><td>Shattered nerves — permanently reduce DEX by 1d4</td></tr>
-            <tr><td>5</td><td>Haunted mind — permanently reduce WIL by 1d4</td></tr>
-            <tr><td>6</td><td>Marked by fate — permanently reduce a random attribute by 1d4, but gain a strange ability</td></tr>
+            <tr><td>1</td><td>Lost limb - permanently reduce STR by 1d4</td></tr>
+            <tr><td>2</td><td>Scarred face - permanently reduce WIL by 1d4</td></tr>
+            <tr><td>3</td><td>Battered body - permanently reduce STR by 1d4</td></tr>
+            <tr><td>4</td><td>Shattered nerves - permanently reduce DEX by 1d4</td></tr>
+            <tr><td>5</td><td>Haunted mind - permanently reduce WIL by 1d4</td></tr>
+            <tr><td>6</td><td>Marked by fate - permanently reduce a random attribute by 1d4, but gain a strange ability</td></tr>
           </tbody>
         </table>
-        <p style="margin-top:1rem;">Scars are permanent. They tell the story of what your character has survived — and what it cost them.</p>
+        <p style="margin-top:1rem;">Scars are permanent. They tell the story of what your character has survived - and what it cost them.</p>
       </div>
     </div>
   </div>
@@ -1701,7 +1757,8 @@ const character = {
   additionalGear: [],
   additionalGearRollsNeeded: 1,
   additionalGearRollsCompleted: 0,
-  startingGear: ['Rations (3 uses)', 'Torch (3 uses)'] // All PCs get these
+  startingGear: ['Rations (3 uses)', 'Torch (3 uses)'], // All PCs get these
+  traits: null // Will be rolled on character completion
 };
 
 let currentStep = 0;
@@ -1961,13 +2018,13 @@ function rollBackground() {
   dieEl.classList.add('highlight');
   setTimeout(() => dieEl.classList.remove('rolling'), 500);
 
-  document.getElementById('bg-roll-label').textContent = roll + ' — ' + bg.name;
+  document.getElementById('bg-roll-label').textContent = roll + ' - ' + bg.name;
 
   // Show detail
   const detail = document.getElementById('bg-detail');
   detail.classList.add('visible');
   document.getElementById('bg-detail-name').textContent = bg.name;
-  // New Barebones backgrounds don't have descriptions — show gear only
+  // New Barebones backgrounds don't have descriptions - show gear only
   document.getElementById('bg-detail-desc').textContent = '';
 
   const gearList = document.getElementById('bg-detail-gear');
@@ -2001,6 +2058,28 @@ const weaponsTable = {
   5: { name: 'Bow', damage: 'd6', slots: 2, bulky: true },
   6: { name: 'Crossbow', damage: 'd8', slots: 3, bulky: true }
 };
+
+// ===== TRAITS DATA (p.28-29) =====
+const traitsTables = {
+  physique: ['Athletic', 'Brawny', 'Flabby', 'Lanky', 'Rugged', 'Scrawny', 'Short', 'Statuesque', 'Stout', 'Towering'],
+  skin: ['Birthmarked', 'Marked', 'Oily', 'Rosy', 'Scarred', 'Soft', 'Tanned', 'Tattooed', 'Weathered', 'Webbed'],
+  hair: ['Bald', 'Braided', 'Curly', 'Filthy', 'Frizzy', 'Long', 'Luxurious', 'Oily', 'Wavy', 'Wispy'],
+  face: ['Bony', 'Broken', 'Chiseled', 'Elongated', 'Pale', 'Perfect', 'Rakish', 'Sharp', 'Square', 'Sunken'],
+  speech: ['Blunt', 'Booming', 'Cryptic', 'Droning', 'Formal', 'Gravelly', 'Precise', 'Squeaky', 'Stuttering', 'Whispery'],
+  clothing: ['Antique', 'Bloody', 'Elegant', 'Filthy', 'Foreign', 'Frayed', 'Frumpy', 'Livery', 'Rancid', 'Soiled'],
+  virtue: ['Ambitious', 'Cautious', 'Courageous', 'Disciplined', 'Gregarious', 'Honorable', 'Humble', 'Merciful', 'Serene', 'Tolerant'],
+  vice: ['Aggressive', 'Bitter', 'Craven', 'Deceitful', 'Greedy', 'Lazy', 'Nervous', 'Rude', 'Vain', 'Vengeful']
+};
+
+// Roll all traits at once
+function rollTraits() {
+  const traits = {};
+  for (const [category, table] of Object.entries(traitsTables)) {
+    const roll = rollDie(10);
+    traits[category] = { roll: roll, value: table[roll - 1] };
+  }
+  return traits;
+}
 
 // ===== ADDITIONAL GEAR DATA =====
 const additionalGearTable = {
@@ -2115,7 +2194,7 @@ function initAdditionalGearStep() {
 
   // Reset display
   document.getElementById('addgear-die').textContent = '?';
-  document.getElementById('addgear-just-rolled').textContent = '—';
+  document.getElementById('addgear-just-rolled').textContent = '-';
   document.getElementById('addgear-detail').style.display = 'none';
   document.getElementById('addgear-items-list').innerHTML = '';
   document.getElementById('btn-step7-next').disabled = true;
@@ -2133,7 +2212,7 @@ function rollAdditionalGear() {
   dieEl.classList.add('rolling');
   setTimeout(() => dieEl.classList.remove('rolling'), 500);
 
-  document.getElementById('addgear-just-rolled').textContent = roll;
+  document.getElementById('addgear-just-rolled').textContent = gear; // Show the gear name, not the roll number
 
   // Update gear items list
   const listEl = document.getElementById('addgear-items-list');
@@ -2160,7 +2239,7 @@ function rollAdditionalGear() {
     // All rolls done
     document.getElementById('btn-roll-addgear').disabled = true;
     document.getElementById('btn-roll-addgear').textContent = 'All rolls complete ✅';
-    counterEl.textContent = `${completed} of ${needed} rolls complete — all done!`;
+    counterEl.textContent = `${completed} of ${needed} rolls complete - all done!`;
     document.getElementById('btn-step7-next').disabled = false;
   }
 }
@@ -2207,16 +2286,16 @@ function updateFullName() {
   const given = givenEl.textContent;
   const family = familyEl.textContent;
 
-  if (given !== '—' && family !== '—') {
+  if (given !== '-' && family !== '-') {
     const fullName = given + ' ' + family;
     character.name = fullName;
     fullEl.textContent = fullName;
-  } else if (given !== '—') {
+  } else if (given !== '-') {
     fullEl.textContent = given + ' ...';
-  } else if (family !== '—') {
+  } else if (family !== '-') {
     fullEl.textContent = '... ' + family;
   } else {
-    fullEl.textContent = '—';
+    fullEl.textContent = '-';
   }
 
   checkStep4Complete();
@@ -2249,7 +2328,7 @@ function checkStep4Complete() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Background grid no longer needed — using dice roll instead
+  // Background grid no longer needed - using dice roll instead
 });
 
 // ===== FINISH CHARACTER =====
@@ -2286,36 +2365,21 @@ function finishCharacter() {
   // Add background gear, replacing 'Random Additional Gear' with rolled items
   bgGearItems.forEach(g => {
     if (g.includes('Random Additional Gear')) {
+      // Background grants random gear - add all rolled additional gear here
       addGearNames.forEach(name => allGear.push(name));
     } else {
       allGear.push(g);
     }
   });
 
-  // If no armor (roll=1), add additional gear items not from background replacement
-  if (character.armor && character.armor.roll === 1) {
-    // If background also had Random Additional Gear, items were already added above
-    // If background did NOT have it, all addGear items are the no-armor bonus
-    if (!bgGearItems.some(g => g.includes('Random Additional Gear'))) {
-      addGearNames.forEach(name => allGear.push(name));
-    }
+  // Add any remaining additional gear items (base roll + no-armor bonus)
+  // that weren't already added via background replacement
+  if (!bgGearItems.some(g => g.includes('Random Additional Gear'))) {
+    // No background gear replacement, so add all additional gear items
+    addGearNames.forEach(name => allGear.push(name));
   }
-
-  // If background had Random Additional Gear but armor was not None,
-  // the bgGearItems.forEach already handled it — no extra adds needed
-  // Edge case: both no-armor AND background bonus — need extra items
-  if (character.armor && character.armor.roll === 1 && bgGearItems.some(g => g.includes('Random Additional Gear'))) {
-    // We already put addGearNames in the bg slot.
-    // But there should be more items for the no-armor bonus.
-    // The array should have both: bg-replacement items + no-armor items.
-    // Since addGearNames contains ALL rolled items, we need to figure out
-    // which are for bg and which are for no-armor.
-    // Simplest: just add all items again since we can't distinguish which roll was which.
-    // Actually — let's just list them all distinctly.
-    // addGearNames already has all items from the forEach above.
-    // No-armor bonus items are the extras beyond what bg needed.
-    // Since we can't distinguish, just include them all once (already done).
-  }
+  // Note: If background had Random Additional Gear, we already added all rolled items above
+  // The additionalGear array contains ALL rolls (1-3 items), so they're all accounted for
 
   if (armorData && armorData.name !== 'None') allGear.push(armorData.name);
   if (weaponData) allGear.push(weaponData.name);
@@ -2324,12 +2388,133 @@ function finishCharacter() {
   const gearHtml = allGear.map(g => `<div class="gear-item">${g}</div>`).join('');
   document.getElementById('sheet-gear').innerHTML = gearHtml;
 
+  // Roll traits if not already rolled
+  if (!character.traits) {
+    character.traits = rollTraits();
+  }
+  
+  // Display traits
+  const traits = character.traits;
+  const traitsHtml = `
+    <div style="margin-top:1.5rem; padding:1rem; background:var(--parchment-light); border:1px solid var(--parchment-dark); border-radius:8px;">
+      <h4 style="font-family:'Cinzel',serif; color:var(--green-dark); margin-bottom:0.75rem; text-align:center;">Traits</h4>
+      <div style="display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; font-size:0.85rem;">
+        <span class="trait-tag" title="d10: ${traits.physique.roll}">${traits.physique.value}</span>
+        <span class="trait-tag" title="d10: ${traits.skin.roll}">${traits.skin.value}</span>
+        <span class="trait-tag" title="d10: ${traits.hair.roll}">${traits.hair.value}</span>
+        <span class="trait-tag" title="d10: ${traits.face.roll}">${traits.face.value}</span>
+        <span class="trait-tag" title="d10: ${traits.speech.roll}">${traits.speech.value}</span>
+        <span class="trait-tag" title="d10: ${traits.clothing.roll}">${traits.clothing.value}</span>
+        <span class="trait-tag" title="d10: ${traits.virtue.roll}">${traits.virtue.value}</span>
+        <span class="trait-tag" title="d10: ${traits.vice.roll}">${traits.vice.value}</span>
+      </div>
+    </div>
+  `;
+  
+  // Insert traits before gear
+  const gearSection = document.getElementById('sheet-gear').parentElement;
+  const existingTraits = gearSection.querySelector('.traits-section');
+  if (existingTraits) existingTraits.remove();
+  const traitsDiv = document.createElement('div');
+  traitsDiv.className = 'traits-section';
+  traitsDiv.innerHTML = traitsHtml;
+  gearSection.insertBefore(traitsDiv, document.getElementById('sheet-gear'));
+
   goToStep(8);
 }
 
-// ===== PRINT =====
-function printSheet() {
-  window.print();
+// ===== PRINT / PDF =====
+async function printSheet() {
+  const name = document.getElementById('sheet-name').textContent || 'Nameless';
+  const background = document.getElementById('sheet-bg').textContent || '';
+
+  // Get stats from the character object
+  const str = character.attributes.str;
+  const dex = character.attributes.dex;
+  const wil = character.attributes.wil;
+  const hp = character.hp;
+  const gold = character.gold;
+  const armor = character.armor ? character.armor.name : '';
+  const weapon = character.weapon ? `${character.weapon.name} (${character.weapon.damage})` : '';
+        
+  // Build gear list for PDF - same logic as character sheet display
+  const allGear = [];
+  if (character.background) {
+    const bg = cairnBackgrounds[character.background];
+    const addGearNames = character.additionalGear.map(ag => ag.name);
+    if (bg && bg.gear) {
+      bg.gear.forEach(g => {
+        if (g.includes('Random Additional Gear')) {
+          addGearNames.forEach(name => allGear.push(name));
+        } else {
+          allGear.push(g);
+        }
+      });
+      // Add remaining additional gear if background didn't have Random Additional Gear
+      if (!bg.gear.some(g => g.includes('Random Additional Gear'))) {
+        addGearNames.forEach(name => allGear.push(name));
+      }
+    }
+  }
+  if (armor && armor !== 'None') allGear.push(armor);
+  if (weapon) allGear.push(weapon);
+  allGear.push('Rations (3 uses)', 'Torch (3 uses)');
+  
+  // Get armor value for PDF - just the number
+  const armorValue = character.armor ? character.armor.armor : 0;
+  
+  // Build traits object for PDF
+  const traitsForPdf = character.traits ? {
+    physique: character.traits.physique.value,
+    skin: character.traits.skin.value,
+    hair: character.traits.hair.value,
+    face: character.traits.face.value,
+    speech: character.traits.speech.value,
+    clothing: character.traits.clothing.value,
+    virtue: character.traits.virtue.value,
+    vice: character.traits.vice.value
+  } : {};
+  
+  try {
+    const response = await fetch('/api/generate-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        background,
+        str,
+        dex,
+        wil,
+        hp,
+        gold,
+        armorValue,
+        weapon,
+        gear: allGear,
+        traits: traitsForPdf
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    // Download the PDF
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name.replace(/[^a-zA-Z0-9-_]/g, '-')}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+  } catch (err) {
+    console.error('PDF generation failed:', err);
+    alert('PDF generation failed. Falling back to print dialog.');
+    // Fallback to print dialog
+    window.print();
+  }
 }
 
 // ===== RESET =====
@@ -2346,25 +2531,26 @@ function resetForge() {
   character.additionalGearRollsNeeded = 1;
   character.additionalGearRollsCompleted = 0;
   character.background = null;
+  character.traits = null; // Reset traits
 
   // Reset Armor UI
   document.getElementById('armor-die').textContent = '?';
-  document.getElementById('armor-result-label').textContent = '—';
-  document.getElementById('armor-detail-name').textContent = '—';
-  document.getElementById('armor-detail-stats').textContent = '—';
+  document.getElementById('armor-result-label').textContent = '-';
+  document.getElementById('armor-detail-name').textContent = '-';
+  document.getElementById('armor-detail-stats').textContent = '-';
   document.getElementById('armor-detail').style.display = 'none';
   document.getElementById('armor-no-armor-msg').style.display = 'none';
 
   // Reset Weapon UI
   document.getElementById('weapon-die').textContent = '?';
-  document.getElementById('weapon-result-label').textContent = '—';
-  document.getElementById('weapon-detail-name').textContent = '—';
-  document.getElementById('weapon-detail-stats').textContent = '—';
+  document.getElementById('weapon-result-label').textContent = '-';
+  document.getElementById('weapon-detail-name').textContent = '-';
+  document.getElementById('weapon-detail-stats').textContent = '-';
   document.getElementById('weapon-detail').style.display = 'none';
 
   // Reset Additional Gear UI
   document.getElementById('addgear-die').textContent = '?';
-  document.getElementById('addgear-just-rolled').textContent = '—';
+  document.getElementById('addgear-just-rolled').textContent = '-';
   document.getElementById('addgear-detail').style.display = 'none';
   document.getElementById('addgear-items-list').innerHTML = '';
   document.getElementById('addgear-roll-counter').textContent = '';
@@ -2375,28 +2561,28 @@ function resetForge() {
 
   // Reset UI
   ['str', 'dex', 'wil'].forEach(attr => {
-    document.getElementById('val-' + attr).textContent = '—';
+    document.getElementById('val-' + attr).textContent = '-';
     document.getElementById('dice-' + attr).innerHTML = '';
     document.getElementById('attr-' + attr).classList.remove('rolled');
   });
 
   document.getElementById('hp-die').textContent = '?';
-  document.getElementById('hp-value').textContent = '—';
+  document.getElementById('hp-value').textContent = '-';
   document.getElementById('gold-d1').textContent = '?';
   document.getElementById('gold-d2').textContent = '?';
   document.getElementById('gold-d3').textContent = '?';
-  document.getElementById('gold-value').textContent = '—';
+  document.getElementById('gold-value').textContent = '-';
   givenNameRoll = null;
   familyNameRoll = null;
   document.getElementById('name-given-die').textContent = '?';
   document.getElementById('name-family-die').textContent = '?';
-  document.getElementById('name-given-label').textContent = '—';
-  document.getElementById('name-family-label').textContent = '—';
-  document.getElementById('name-full-display').textContent = '—';
+  document.getElementById('name-given-label').textContent = '-';
+  document.getElementById('name-family-label').textContent = '-';
+  document.getElementById('name-full-display').textContent = '-';
 
   document.getElementById('bg-die').textContent = '?';
   document.getElementById('bg-die').classList.remove('highlight');
-  document.getElementById('bg-roll-label').textContent = '—';
+  document.getElementById('bg-roll-label').textContent = '-';
   document.getElementById('bg-detail').classList.remove('visible');
   document.getElementById('btn-reroll-bg').style.display = 'none';
 
