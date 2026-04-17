@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <style>
 /* ===== RESET & BASE ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2423,7 +2423,7 @@ function finishCharacter() {
   goToStep(8);
 }
 
-// ===== PRINT / PDF =====
+// ===== PRINT / PDF (Client-side using PDF-lib) =====
 async function printSheet() {
   const name = document.getElementById('sheet-name').textContent || 'Nameless';
   const background = document.getElementById('sheet-bg').textContent || '';
@@ -2436,8 +2436,8 @@ async function printSheet() {
   const gold = character.gold;
   const armor = character.armor ? character.armor.name : '';
   const weapon = character.weapon ? `${character.weapon.name} (${character.weapon.damage})` : '';
-        
-  // Build gear list for PDF - same logic as character sheet display
+
+  // Build gear list for PDF
   const allGear = [];
   if (character.background) {
     const bg = cairnBackgrounds[character.background];
@@ -2450,7 +2450,6 @@ async function printSheet() {
           allGear.push(g);
         }
       });
-      // Add remaining additional gear if background didn't have Random Additional Gear
       if (!bg.gear.some(g => g.includes('Random Additional Gear'))) {
         addGearNames.forEach(name => allGear.push(name));
       }
@@ -2459,61 +2458,88 @@ async function printSheet() {
   if (armor && armor !== 'None') allGear.push(armor);
   if (weapon) allGear.push(weapon);
   allGear.push('Rations (3 uses)', 'Torch (3 uses)');
-  
-  // Get armor value for PDF - just the number
-  const armorValue = character.armor ? character.armor.armor : 0;
-  
-  // Build traits object for PDF
-  const traitsForPdf = character.traits ? {
-    physique: character.traits.physique.value,
-    skin: character.traits.skin.value,
-    hair: character.traits.hair.value,
-    face: character.traits.face.value,
-    speech: character.traits.speech.value,
-    clothing: character.traits.clothing.value,
-    virtue: character.traits.virtue.value,
-    vice: character.traits.vice.value
-  } : {};
-  
-  try {
-    const response = await fetch('/api/generate-pdf', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name,
-        background,
-        str,
-        dex,
-        wil,
-        hp,
-        gold,
-        armorValue,
-        weapon,
-        gear: allGear,
-        traits: traitsForPdf
-      })
-    });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  const armorValue = character.armor ? character.armor.armor : 0;
+
+  // Build traits list
+  const traitList = [];
+  if (character.traits) {
+    traitList.push(character.traits.physique.value);
+    traitList.push(character.traits.skin.value);
+    traitList.push(character.traits.hair.value);
+    traitList.push(character.traits.face.value);
+    traitList.push(character.traits.speech.value);
+    traitList.push(character.traits.clothing.value);
+    traitList.push(character.traits.virtue.value);
+    traitList.push(character.traits.vice.value);
+  }
+
+  try {
+    // Fetch the PDF template
+    const templateUrl = 'Cairn-2e-Character-Sheet-Portrait-Letter-Fillable.pdf';
+    const templateBytes = await fetch(templateUrl).then(res => res.arrayBuffer());
+
+    // Load the PDF
+    const { PDFDocument } = PDFLib;
+    const pdfDoc = await PDFDocument.load(templateBytes);
+    const form = pdfDoc.getForm();
+
+    // Helper to safely set text field
+    function safeSetText(fieldName, value) {
+      try {
+        const field = form.getTextField(fieldName);
+        if (field) field.setText(value);
+      } catch (e) {
+        console.log(`Could not set field ${fieldName}: ${e.message}`);
+      }
     }
 
-    // Download the PDF
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
+    // Fill in the fields
+    if (name) safeSetText('Name', name);
+    if (background) safeSetText('Background', background);
+    if (str) safeSetText('STR_MAX', str.toString());
+    if (dex) safeSetText('DEX_MAX', dex.toString());
+    if (wil) safeSetText('WIL_MAX', wil.toString());
+    if (hp) safeSetText('HP_MAX', hp.toString());
+    if (gold) safeSetText('Gold', gold.toString());
+
+    // Armor field
+    safeSetText('Armor', armorValue.toString());
+
+    // Weapon in Notes
+    if (weapon) safeSetText('Notes', 'Weapon: ' + weapon);
+
+    // Traits in Traits1-4 (2 per field)
+    if (traitList.length >= 2) safeSetText('Traits1', traitList[0] + ', ' + traitList[1]);
+    if (traitList.length >= 4) safeSetText('Traits2', traitList[2] + ', ' + traitList[3]);
+    if (traitList.length >= 6) safeSetText('Traits3', traitList[4] + ', ' + traitList[5]);
+    if (traitList.length >= 8) safeSetText('Traits4', traitList[6] + ', ' + traitList[7]);
+
+    // Inventory slots
+    allGear.slice(0, 10).forEach((item, index) => {
+      safeSetText(`Slot.${index}`, item);
+    });
+    allGear.slice(10, 15).forEach((item, index) => {
+      safeSetText(`Petty Items.${index}`, item);
+    });
+
+    // Generate PDF
+    const pdfBytes = await pdfDoc.save({ updateFieldAppearances: false });
+
+    // Download
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `${name.replace(/[^a-zA-Z0-9-_]/g, '-')}.pdf`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+    URL.revokeObjectURL(url);
 
   } catch (err) {
     console.error('PDF generation failed:', err);
-    alert('PDF generation failed. Falling back to print dialog.');
-    // Fallback to print dialog
-    window.print();
+    alert('PDF generation failed: ' + err.message + '\n\nMake sure the PDF template file exists in the same folder as index.html');
   }
 }
 
