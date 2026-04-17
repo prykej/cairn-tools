@@ -1,0 +1,2416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cairn — An Interactive Tutorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --parchment: #F5E6C8;
+  --parchment-light: #FDF6E3;
+  --parchment-dark: #E8D5B0;
+  --ink: #3D2B1F;
+  --ink-light: #5C4033;
+  --green-dark: #2D5016;
+  --green-mid: #3A6B1E;
+  --gold: #C9A227;
+  --gold-light: #D4B84A;
+  --copper: #B87333;
+  --red-soft: #8B4513;
+  --red-accent: #A0522D;
+  --shadow: rgba(61,43,31,0.15);
+  --shadow-deep: rgba(61,43,31,0.3);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Lora', Georgia, serif;
+  color: var(--ink);
+  background: var(--parchment-light);
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* ===== PARCHMENT TEXTURE ===== */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(201,162,39,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(139,69,19,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(45,80,22,0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ===== TYPOGRAPHY ===== */
+h1, h2, h3, h4, h5, h6 { font-family: 'Cinzel', serif; line-height: 1.3; }
+.cormorant { font-family: 'Cormorant Garamond', serif; }
+.unifraktur { font-family: 'UnifrakturMaguntia', cursive; }
+
+/* ===== LAYOUT ===== */
+.page-wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.parchment-box {
+  background: var(--parchment);
+  border: 2px solid var(--parchment-dark);
+  border-radius: 4px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px var(--shadow), inset 0 0 60px rgba(201,162,39,0.05);
+  position: relative;
+}
+
+.parchment-box::before,
+.parchment-box::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-color: var(--gold);
+  border-style: solid;
+  opacity: 0.4;
+}
+.parchment-box::before { top: 6px; left: 6px; border-width: 2px 0 0 2px; }
+.parchment-box::after { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; }
+
+/* ===== HERO ===== */
+.hero {
+  text-align: center;
+  padding: 3rem 1rem 2rem;
+  background: linear-gradient(180deg, var(--parchment) 0%, var(--parchment-light) 100%);
+  border-bottom: 3px double var(--gold);
+  margin-bottom: 2rem;
+}
+
+.hero h1 {
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  font-weight: 900;
+  color: var(--ink);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.hero .subtitle {
+  font-family: 'UnifrakturMaguntia', cursive;
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  color: var(--green-dark);
+  margin-bottom: 1rem;
+}
+
+.hero .tagline {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--ink-light);
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 1.2rem 0;
+  color: var(--gold);
+  font-size: 1.1rem;
+}
+.ornament::before, .ornament::after {
+  content: '';
+  flex: 1;
+  max-width: 120px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+/* ===== NAVIGATION ===== */
+.nav-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  padding: 0.75rem;
+  background: var(--parchment);
+  border: 1px solid var(--parchment-dark);
+  border-radius: 4px;
+  box-shadow: 0 1px 4px var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  border: 1px solid var(--parchment-dark);
+  border-radius: 3px;
+  background: var(--parchment-light);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.nav-btn:hover, .nav-btn.active {
+  background: var(--green-dark);
+  color: var(--parchment-light);
+  border-color: var(--green-dark);
+}
+
+/* ===== SECTION HEADINGS ===== */
+.section-title {
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-weight: 700;
+  color: var(--ink);
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.section-subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--ink-light);
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.7rem 1.8rem;
+  border: 2px solid var(--green-dark);
+  border-radius: 4px;
+  background: var(--green-dark);
+  color: var(--parchment-light);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn:hover {
+  background: var(--green-mid);
+  border-color: var(--green-mid);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px var(--shadow-deep);
+}
+
+.btn:active { transform: translateY(0); }
+
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), var(--copper));
+  border-color: var(--gold);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+.btn-gold:hover {
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  border-color: var(--gold-light);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--green-dark);
+}
+.btn-outline:hover {
+  background: var(--green-dark);
+  color: var(--parchment-light);
+}
+
+.btn-red {
+  background: var(--red-soft);
+  border-color: var(--red-soft);
+  color: var(--parchment-light);
+}
+.btn-red:hover {
+  background: var(--red-accent);
+  border-color: var(--red-accent);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ===== TUTORIAL CONTENT ===== */
+.tutorial-text {
+  font-size: 1.02rem;
+  line-height: 1.8;
+  max-width: 680px;
+  margin: 0 auto 1.5rem;
+}
+
+.tutorial-text strong { color: var(--green-dark); }
+
+.callout {
+  background: rgba(45,80,22,0.07);
+  border-left: 4px solid var(--green-dark);
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.95rem;
+}
+
+.callout-gold {
+  background: rgba(201,162,39,0.1);
+  border-left-color: var(--gold);
+}
+
+.rule-box {
+  background: var(--parchment-light);
+  border: 2px solid var(--parchment-dark);
+  border-radius: 4px;
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+}
+
+.rule-box h4 {
+  color: var(--green-dark);
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ===== DICE ROLLER ===== */
+.dice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.die-face {
+  width: 56px;
+  height: 56px;
+  background: var(--parchment-light);
+  border: 2px solid var(--parchment-dark);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+  box-shadow: 0 2px 4px var(--shadow);
+  transition: transform 0.3s, box-shadow 0.3s;
+  position: relative;
+}
+
+.die-face.rolling {
+  animation: diceShake 0.5s ease-in-out;
+}
+
+@keyframes diceShake {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  20% { transform: rotate(-15deg) scale(1.1); }
+  40% { transform: rotate(12deg) scale(1.05); }
+  60% { transform: rotate(-8deg) scale(1.08); }
+  80% { transform: rotate(5deg) scale(1.02); }
+}
+
+.die-face.highlight {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(201,162,39,0.4);
+}
+
+/* ===== ATTRIBUTES GRID ===== */
+.attributes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.attr-card {
+  background: var(--parchment-light);
+  border: 2px solid var(--parchment-dark);
+  border-radius: 4px;
+  padding: 0.75rem;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.attr-card.rolled {
+  border-color: var(--green-dark);
+  box-shadow: 0 0 8px rgba(45,80,22,0.15);
+}
+
+.attr-card .attr-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--green-dark);
+  margin-bottom: 0.25rem;
+}
+
+.attr-card .attr-abbr {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  color: var(--ink-light);
+  margin-bottom: 0.4rem;
+}
+
+.attr-card .attr-value {
+  font-family: 'Cinzel', serif;
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.attr-card .attr-dice {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 0.35rem;
+}
+
+.attr-card .mini-die {
+  width: 22px;
+  height: 22px;
+  background: var(--parchment);
+  border: 1px solid var(--parchment-dark);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ink-light);
+}
+
+/* ===== BACKGROUND SELECTOR ===== */
+.bg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.bg-card {
+  background: var(--parchment-light);
+  border: 2px solid var(--parchment-dark);
+  border-radius: 4px;
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Cinzel', serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.bg-card:hover {
+  border-color: var(--gold);
+  box-shadow: 0 2px 8px var(--shadow);
+  transform: translateY(-2px);
+}
+
+.bg-card.selected {
+  background: var(--green-dark);
+  border-color: var(--green-dark);
+  color: var(--parchment-light);
+  box-shadow: 0 3px 12px var(--shadow-deep);
+}
+
+.bg-detail {
+  background: var(--parchment-light);
+  border: 2px solid var(--gold);
+  border-radius: 4px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+  display: none;
+}
+
+.bg-detail.visible { display: block; }
+
+.bg-detail h4 {
+  color: var(--green-dark);
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+}
+
+.gear-list {
+  list-style: none;
+  padding: 0;
+}
+
+.gear-list li {
+  padding: 0.35rem 0;
+  padding-left: 1.2rem;
+  position: relative;
+  font-size: 0.95rem;
+}
+
+.gear-list li::before {
+  content: '⚔';
+  position: absolute;
+  left: 0;
+  color: var(--gold);
+  font-size: 0.75rem;
+  top: 0.45rem;
+}
+
+/* ===== NAME INPUT ===== */
+.name-input {
+  font-family: 'Cinzel', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--parchment-dark);
+  border-radius: 4px;
+  background: var(--parchment-light);
+  color: var(--ink);
+  width: 100%;
+  max-width: 400px;
+  margin: 1rem auto;
+  display: block;
+  transition: border-color 0.2s;
+}
+
+.name-input:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 8px rgba(201,162,39,0.3);
+}
+
+.name-input::placeholder {
+  color: var(--parchment-dark);
+  font-weight: 400;
+}
+
+/* ===== CHARACTER SHEET ===== */
+.char-sheet {
+  background: var(--parchment);
+  border: 3px double var(--gold);
+  border-radius: 6px;
+  padding: 2rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 4px 16px var(--shadow-deep);
+  position: relative;
+  overflow: hidden;
+}
+
+.char-sheet::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(201,162,39,0.2);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.char-name-display {
+  font-family: 'UnifrakturMaguntia', cursive;
+  font-size: clamp(2rem, 5vw, 3rem);
+  text-align: center;
+  color: var(--ink);
+  margin-bottom: 0.25rem;
+}
+
+.char-bg-display {
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: 0.95rem;
+  color: var(--green-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1.25rem;
+}
+
+.sheet-section {
+  margin-bottom: 1.5rem;
+}
+
+.sheet-section h5 {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--green-dark);
+  border-bottom: 1px solid var(--parchment-dark);
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.sheet-attrs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.sheet-attr {
+  text-align: center;
+  padding: 0.5rem;
+  background: var(--parchment-light);
+  border: 1px solid var(--parchment-dark);
+  border-radius: 3px;
+}
+
+.sheet-attr .sa-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-light);
+}
+
+.sheet-attr .sa-val {
+  font-family: 'Cinzel', serif;
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.sheet-hp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(139,69,19,0.08);
+  border: 1px solid rgba(139,69,19,0.2);
+  border-radius: 3px;
+  margin-bottom: 0.75rem;
+}
+
+.sheet-hp .hp-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--red-soft);
+}
+
+.sheet-hp .hp-val {
+  font-family: 'Cinzel', serif;
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--red-soft);
+}
+
+.sheet-gold {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(201,162,39,0.08);
+  border: 1px solid rgba(201,162,39,0.2);
+  border-radius: 3px;
+}
+
+.sheet-gold .gold-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+}
+
+.sheet-gold .gold-val {
+  font-family: 'Cinzel', serif;
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--gold);
+}
+
+.sheet-gear {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.35rem;
+}
+
+.gear-item {
+  padding: 0.35rem 0.65rem;
+  background: var(--parchment-light);
+  border: 1px solid var(--parchment-dark);
+  border-radius: 3px;
+  font-size: 0.9rem;
+}
+
+/* ===== WIZARD STEPS ===== */
+.wizard-step {
+  display: none;
+}
+
+.wizard-step.active {
+  display: block;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.step-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--parchment-dark);
+  transition: all 0.3s;
+}
+
+.step-dot.completed {
+  background: var(--green-dark);
+}
+
+.step-dot.current {
+  background: var(--gold);
+  box-shadow: 0 0 8px rgba(201,162,39,0.5);
+  transform: scale(1.3);
+}
+
+.step-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ===== ACCORDION ===== */
+.accordion-item {
+  border: 1px solid var(--parchment-dark);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+}
+
+.accordion-header {
+  padding: 0.85rem 1rem;
+  background: var(--parchment-light);
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.accordion-header:hover {
+  background: var(--parchment-dark);
+}
+
+.accordion-header .arrow {
+  transition: transform 0.3s;
+  color: var(--gold);
+}
+
+.accordion-item.open .accordion-header .arrow {
+  transform: rotate(90deg);
+}
+
+.accordion-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+
+.accordion-item.open .accordion-body {
+  max-height: 2000px;
+}
+
+.accordion-content {
+  padding: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* ===== TABLE ===== */
+.med-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.med-table th {
+  font-family: 'Cinzel', serif;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--parchment-dark);
+  color: var(--green-dark);
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  border-bottom: 2px solid var(--gold);
+}
+
+.med-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--parchment-dark);
+}
+
+.med-table tr:hover td {
+  background: rgba(201,162,39,0.06);
+}
+
+/* ===== FOOTER ===== */
+footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  border-top: 3px double var(--gold);
+  margin-top: 2rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--ink-light);
+  font-size: 0.95rem;
+}
+
+footer a {
+  color: var(--green-dark);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--green-dark);
+}
+
+/* ===== TAB SYSTEM ===== */
+.tab-container { margin-bottom: 2rem; }
+
+.tab-headers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-bottom: 2px solid var(--parchment-dark);
+  margin-bottom: 0;
+}
+
+.tab-header {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.65rem 1.2rem;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  background: transparent;
+  color: var(--ink-light);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-header:hover {
+  color: var(--ink);
+  background: rgba(201,162,39,0.08);
+}
+
+.tab-header.active {
+  background: var(--parchment);
+  color: var(--green-dark);
+  border-color: var(--parchment-dark);
+  border-bottom-color: var(--parchment);
+  margin-bottom: -2px;
+}
+
+.tab-panel {
+  display: none;
+  padding: 1.5rem 0;
+}
+
+.tab-panel.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  .page-wrapper { padding: 0.5rem; }
+  .parchment-box { padding: 1.25rem; }
+  .hero { padding: 2rem 0.75rem 1.5rem; }
+  .attributes-grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+  .attr-card .attr-value { font-size: 1.5rem; }
+  .bg-grid { grid-template-columns: repeat(3, 1fr); }
+  .sheet-attrs { grid-template-columns: repeat(3, 1fr); }
+  .char-sheet { padding: 1.25rem; }
+  .nav-btn { font-size: 0.72rem; padding: 0.35rem 0.65rem; }
+  .step-nav { justify-content: center; }
+}
+
+/* ===== PRINT ===== */
+@media print {
+  .nav-bar, .step-indicator, .step-nav, .btn, .tab-headers { display: none !important; }
+  .wizard-step { display: block !important; }
+  .char-sheet { break-inside: avoid; }
+  body { background: #fff; }
+  .parchment-box { box-shadow: none; border: 1px solid #ccc; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+<!-- ====== HERO ====== -->
+<header class="hero">
+  <h1>Cairn</h1>
+  <div class="subtitle">A Warden's Guide to the Wilds</div>
+  <div class="ornament">❧ ❦ ❧</div>
+  <p class="tagline">An interactive tutorial and character forge for Cairn, a rules-light tabletop adventure game of treasure, peril, and exploration.</p>
+</header>
+
+<!-- ====== NAV ====== -->
+<nav class="nav-bar">
+  <button class="nav-btn active" onclick="scrollToSection('tutorial')">📜 Tutorial</button>
+  <button class="nav-btn" onclick="scrollToSection('forge')">⚒️ Character Forge</button>
+  <button class="nav-btn" onclick="scrollToSection('reference')">📖 Reference</button>
+</nav>
+
+<!-- ====================================================================== -->
+<!--  TUTORIAL SECTION                                                       -->
+<!-- ====================================================================== -->
+<section id="tutorial" class="parchment-box">
+  <h2 class="section-title">What Is Cairn?</h2>
+  <p class="section-subtitle">Into the woods, into the dark, into the unknown</p>
+
+  <div class="ornament">✦</div>
+
+  <p class="tutorial-text">
+    <strong>Cairn</strong> is a rules-light, old-school-inspired tabletop roleplaying game. You play as adventurers — townsfolk, wanderers, and fortune-seekers — exploring a forest full of ancient ruins, hidden treasures, and terrible dangers. The game rewards cleverness over combat prowess: a well-placed trap or a hasty retreat will serve you better than a drawn-out sword fight.
+  </p>
+
+  <p class="tutorial-text">
+    Cairn draws from <em>Into the Odd</em> and <em>Knave</em>, distilling their innovations into a system that fits on a single page. There are no classes, no levels, and no skill lists. Your character is defined by what they carry and how you play them.
+  </p>
+
+  <div class="callout">
+    <strong>Key Principle:</strong> In Cairn, your <em>attributes</em> are used for <strong>Saves</strong> — when you face danger, the Warden calls for a Save. Roll a d20; if the result is <strong>equal to or less than</strong> your relevant attribute, you succeed. Attributes also represent your maximum Fatigue and your carrying capacity. A high Strength means you can carry more and resist physical effects. A high Dexterity lets you dodge and move quickly. A high Willpower protects you from fear and magic.
+  </div>
+
+  <!-- TABS FOR TUTORIAL SECTIONS -->
+  <div class="tab-container">
+    <div class="tab-headers">
+      <button class="tab-header active" onclick="switchTab('tut', 'overview')">Overview</button>
+      <button class="tab-header" onclick="switchTab('tut', 'attributes')">Attributes</button>
+      <button class="tab-header" onclick="switchTab('tut', 'combat')">Combat &amp; HP</button>
+      <button class="tab-header" onclick="switchTab('tut', 'exploration')">Exploration</button>
+      <button class="tab-header" onclick="switchTab('tut', 'advancement')">Advancement</button>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div class="tab-panel active" id="tut-overview">
+      <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">The Core Loop</h3>
+      <p class="tutorial-text">
+        Play in Cairn follows a simple rhythm:
+      </p>
+      <ol style="margin-left:1.5rem; margin-bottom:1.5rem; line-height:2;">
+        <li><strong>The Warden describes the situation.</strong> You hear what your character perceives.</li>
+        <li><strong>You say what your character does.</strong> No turns, no initiative — just the fiction.</li>
+        <li><strong>The Warden tells you the consequence.</strong> If there's risk, dice are rolled.</li>
+      </ol>
+
+      <div class="rule-box">
+        <h4>🎲 When to Roll</h4>
+        <p>Roll dice only when the outcome is <strong>uncertain and risky</strong>. If a character attempts something with no real cost for failure, or if success is a foregone conclusion, simply describe the result. The dice are reserved for moments that matter.</p>
+      </div>
+
+      <p class="tutorial-text">
+        Cairn uses only <strong>d6s and d20s</strong>. Most rolls are <strong>3d6</strong> for character creation and <strong>d20</strong> for saves. The system avoids the "math bloat" of larger games — every roll is quick, and the stakes are always clear.
+      </p>
+
+      <div class="callout callout-gold">
+        <strong>Warden's Wisdom:</strong> Cairn treats the game world as real. If something would logically happen, it happens — no roll needed. A locked door stops you. A fire burns. A falling rock crushes. The fiction comes first; the mechanics support it.
+      </div>
+    </div>
+
+    <!-- ATTRIBUTES TAB -->
+    <div class="tab-panel" id="tut-attributes">
+      <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">The Three Attributes</h3>
+      <p class="tutorial-text">
+        Every character has <strong>three</strong> attributes, each generated by rolling <strong>3d6</strong> (you may then swap any two results). These numbers define your character's physical and mental resilience — and your ability to resist harm.
+      </p>
+
+      <table class="med-table">
+        <thead>
+          <tr>
+            <th>Attribute</th>
+            <th>Abbr</th>
+            <th>Used For</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Strength</strong></td><td>STR</td><td>Physical power, lifting, breaking free, resisting poison</td></tr>
+          <tr><td><strong>Dexterity</strong></td><td>DEX</td><td>Poise, speed, reflexes, dodging, climbing, sneaking</td></tr>
+          <tr><td><strong>Willpower</strong></td><td>WIL</td><td>Persuasion, deception, intimidation, spellcasting, charm</td></tr>
+        </tbody>
+      </table>
+
+      <div class="rule-box" style="margin-top:1.5rem;">
+        <h4>⚔️ Attributes &amp; Saves</h4>
+        <p>When the outcome of an action is <strong>uncertain and risky</strong>, you make a <strong>Save</strong>: roll <strong>1d20</strong> and compare to the relevant attribute. If you roll <strong>equal to or under</strong> the attribute, you succeed. A 1 is always a success; a 20 is always a failure. Higher attributes make you more resilient — a character with 16 DEX is remarkably agile, while one with 8 DEX is at greater risk when dodging.</p>
+      </div>
+
+      <div class="callout">
+        <strong>Attributes Are Not Universal Descriptors:</strong> A character with low STR isn't hopelessly weak — they can still attempt to lift a heavy door or survive a deadly fight! Their risk is simply higher. Cairn doesn't use attribute modifiers (+1, +2, etc.). The raw number is what matters for saves.
+      </div>
+    </div>
+
+    <!-- COMBAT TAB -->
+    <div class="tab-panel" id="tut-combat">
+      <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Combat &amp; Hit Protection</h3>
+
+      <p class="tutorial-text">
+        Combat in Cairn is <strong>fast and dangerous</strong>. A Round is roughly ten seconds of in-game time, with each side taking turns. During the first round, each PC must make a <strong>DEX save</strong> to act — those who fail lose their turn. After that, PCs act, then opponents, alternating until combat ends.
+      </p>
+
+      <div class="rule-box">
+        <h4>⚔️ Attacks Automatically Hit</h4>
+        <p>There is no attack roll in Cairn. The attacker rolls their <strong>weapon die</strong>, subtracts the target's <strong>Armor</strong>, and deals the remaining total to the target's HP. If multiple attackers target the same foe, roll all damage dice and keep the single highest result.</p>
+      </div>
+
+      <h4 style="font-family:'Cinzel',serif; font-size:1rem; margin:1rem 0 0.5rem; color:var(--green-dark);">Hit Protection (HP)</h4>
+      <p class="tutorial-text">
+        HP reflects your ability to <em>avoid damage in combat</em> — it is not health or fortitude. When you take damage, HP is reduced first. When HP reaches 0, any further damage reduces your <strong>STR</strong>. If STR reaches 0, the character <strong>dies</strong>. If DEX reaches 0, they are <strong>paralyzed</strong>. If WIL reaches 0, they are <strong>delirious</strong>.
+      </p>
+
+      <div class="rule-box">
+        <h4>💀 Critical Damage</h4>
+        <p>Damage that reduces HP below zero is subtracted from STR by the remaining amount. The target must then immediately make a <strong>STR save</strong> using their new, lower STR score. On a failure, they suffer <strong>Critical Damage</strong> — they cannot do anything but crawl weakly, grasping for life. If given aid (such as bandages), they stabilize. If left untreated, they die within the hour.</p>
+      </div>
+
+      <div class="callout callout-gold">
+        <strong>Attack Modifiers:</strong> Fighting from a position of weakness (cover, bound hands) makes the attack <strong>Impaired</strong> — roll d4 damage regardless of weapon. Fighting from advantage (helpless foe, daring maneuver) makes the attack <strong>Enhanced</strong> — roll d12 damage instead. Unarmed attacks always do d4 damage.
+      </div>
+
+      <h4 style="font-family:'Cinzel',serif; font-size:1rem; margin:1rem 0 0.5rem; color:var(--green-dark);">Damage &amp; Armor</h4>
+      <p class="tutorial-text">
+        Armor reduces incoming damage by a flat amount before it reaches HP. A character cannot have more than <strong>3 Armor</strong>. Shields and similar items provide a bonus while held or worn.
+      </p>
+    </div>
+
+    <!-- EXPLORATION TAB -->
+    <div class="tab-panel" id="tut-exploration">
+      <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Exploration &amp; Encumbrance</h3>
+
+      <p class="tutorial-text">
+        Exploration is the heart of Cairn. You venture into the forest, into ruins, into caves — seeking treasure, knowledge, or simply survival. The game uses <strong>encumbrance slots</strong> to manage what you carry. Each character has a limited number of slots, and every item takes up space.
+      </p>
+
+      <div class="rule-box">
+        <h4>🎒 Encumbrance</h4>
+        <p>Most items take <strong>1 slot</strong>. Bulky items take <strong>2 slots</strong>. You can carry up to 10 slots worth of gear. If you exceed your carrying capacity, you suffer penalties — you become slow and vulnerable. What you choose to bring matters.</p>
+      </div>
+
+      <p class="tutorial-text">
+        <strong>Light</strong> is a resource. Torches burn for a set duration. A lantern is precious. Wandering in the dark is deadly. Managing your light sources creates natural tension and pacing — you can't explore forever, and every moment in the dungeon costs something.
+      </p>
+
+      <h4 style="font-family:'Cinzel',serif; font-size:1rem; margin:1rem 0 0.5rem; color:var(--green-dark);">Reaction &amp; Morale</h4>
+      <p class="tutorial-text">
+        Not every encounter needs to be a fight. When you meet a creature, the Warden rolls a <strong>Reaction Roll</strong> (2d6) to determine initial disposition. Low results mean hostility; high results mean friendliness. <strong>Morale</strong> checks determine when enemies flee or surrender. Smart players can negotiate, trick, or intimidate their way out of danger.
+      </p>
+
+      <div class="callout">
+        <strong>Play Smart:</strong> Cairn rewards creative problem-solving. Talk to the goblins. Set a trap. Collapse the ceiling. Retreat and return with a plan. The dungeon is always there — your character might not be.
+      </div>
+    </div>
+
+    <!-- ADVANCEMENT TAB -->
+    <div class="tab-panel" id="tut-advancement">
+      <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Advancement &amp; Growth</h3>
+
+      <p class="tutorial-text">
+        Cairn has <strong>no levels and no experience points</strong>. Your character grows through what they acquire, what they learn, and how the world changes them. A character who finds a magic sword is fundamentally more capable — not because of a number on a sheet, but because of the tool they now possess.
+      </p>
+
+      <div class="rule-box">
+        <h4>📈 How Characters Grow</h4>
+        <ul style="margin-left:1rem; line-height:2;">
+          <li><strong>Treasure</strong> — Gold buys better gear, hirelings, and strongholds</li>
+          <li><strong>Artifacts</strong> — Magical items grant strange and potent abilities</li>
+          <li><strong>Scars</strong> — Surviving critical wounds may permanently alter your attributes</li>
+          <li><strong>Reputation</strong> — Your deeds open (or close) doors across the region</li>
+        </ul>
+      </div>
+
+      <p class="tutorial-text">
+        <strong>Scars</strong> deserve special mention. When a character reaches 0 STR but survives, they roll on the Scars table. This permanently changes a character — sometimes for the worse, sometimes in surprising ways. A scar is a story, and your character becomes more interesting with each one they survive.
+      </p>
+
+      <div class="callout callout-gold">
+        <strong>Retirement:</strong> When your character has accumulated enough wealth and stories, they can retire — becoming an NPC in the world. Their stronghold becomes a base for future adventurers. This isn't failure; it's legacy.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================== -->
+<!--  CHARACTER FORGE                                                        -->
+<!-- ====================================================================== -->
+<section id="forge" class="parchment-box">
+  <h2 class="section-title">The Character Forge</h2>
+  <p class="section-subtitle">Step into the wilds — craft your adventurer</p>
+
+  <div class="ornament">⚒️</div>
+
+  <!-- STEP INDICATOR -->
+  <div class="step-indicator">
+    <div class="step-dot current" id="dot-0"></div>
+    <div class="step-dot" id="dot-1"></div>
+    <div class="step-dot" id="dot-2"></div>
+    <div class="step-dot" id="dot-3"></div>
+    <div class="step-dot" id="dot-4"></div>
+    <div class="step-dot" id="dot-5"></div>
+    <div class="step-dot" id="dot-6"></div>
+    <div class="step-dot" id="dot-7"></div>
+  </div>
+
+  <!-- ===== STEP 0: INTRO ===== -->
+  <div class="wizard-step active" id="step-0">
+    <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Welcome to the Forge</h3>
+    <p class="tutorial-text">
+      Creating a Cairn character is quick — most of the work is done by the dice. In five steps, you'll have a fully playable adventurer ready to explore the forest and its ancient secrets.
+    </p>
+    <div class="rule-box">
+      <h4>📋 The Seven Steps</h4>
+      <ol style="margin-left:1.5rem; line-height:2.2;">
+        <li><strong>Roll Attributes</strong> — Roll 3d6 for each of the three attributes</li>
+        <li><strong>Roll Hit Protection</strong> — Roll 1d6 for your HP</li>
+        <li><strong>Roll Your Background</strong> — Roll d100 to determine your past life and starting gear</li>
+        <li><strong>Roll Starting Gold &amp; Name</strong> — 3d6 gold pieces, then roll or choose a name</li>
+        <li><strong>Roll Armor</strong> — Roll d6 on the Armor table</li>
+        <li><strong>Roll Weapon</strong> — Roll d6 on the Weapons table</li>
+        <li><strong>Additional Gear</strong> — Roll d100 (roll again if no armor or background grants it)</li>
+      </ol>
+    </div>
+    <div class="step-nav">
+      <span></span>
+      <button class="btn btn-gold" onclick="goToStep(1)">Begin Forging ⚒️</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 5: ARMOR ===== -->
+  <div class="wizard-step" id="step-5">
+    <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Step Five: Roll Armor</h3>
+    <p class="tutorial-text" style="text-align:center;">
+      Roll <strong>d6</strong> on the Armor table to determine your starting protection. If you roll "None," you'll get to roll for Additional Gear instead.
+    </p>
+
+    <div class="rule-box" style="margin:1rem 0;">
+      <h4>🛡️ Armor Table (d6)</h4>
+      <table class="med-table">
+        <thead><tr><th>d6</th><th>Armor</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>None — Roll for Additional Gear</td></tr>
+          <tr><td>2</td><td>Shield (+1 Armor)</td></tr>
+          <tr><td>3</td><td>Helmet (+1 Armor)</td></tr>
+          <tr><td>4</td><td>Gambeson (+1 Armor)</td></tr>
+          <tr><td>5</td><td>Chainmail (2 Armor, bulky)</td></tr>
+          <tr><td>6</td><td>Plate (3 Armor, bulky)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="text-align:center; margin:1.5rem 0;">
+      <button class="btn btn-gold" onclick="rollArmor()">Roll d6 🛡️</button>
+    </div>
+
+    <div style="display:flex; justify-content:center; gap:0.75rem; margin-bottom:1rem;">
+      <div class="die-face" id="armor-die">?</div>
+      <div style="display:flex; align-items:center; font-family:'Cinzel',serif; font-size:1.4rem; font-weight:900; color:var(--green-dark);">
+        <span id="armor-result-label">—</span>
+      </div>
+    </div>
+
+    <div id="armor-detail" style="display:none; text-align:center; margin:1rem 0;">
+      <div style="background:var(--parchment-light); border:2px solid var(--gold); border-radius:4px; padding:1rem; display:inline-block;">
+        <div style="font-family:'Cinzel',serif; font-size:1.1rem; font-weight:700; color:var(--ink);" id="armor-detail-name">—</div>
+        <div style="font-family:'Cinzel',serif; font-size:0.9rem; color:var(--gold);" id="armor-detail-stats">—</div>
+      </div>
+    </div>
+
+    <div class="callout" id="armor-no-armor-msg" style="display:none;">
+      <strong>No Armor!</strong> Your character starts without armor, but you'll roll for Additional Gear in Step Seven to compensate.
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-outline" onclick="goToStep(4)">← Back</button>
+      <button class="btn" id="btn-step5-next" onclick="goToStep(6)" disabled>Roll Weapon →</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 6: WEAPON ===== -->
+  <div class="wizard-step" id="step-6">
+    <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Step Six: Roll Weapon</h3>
+    <p class="tutorial-text" style="text-align:center;">
+      Roll <strong>d6</strong> on the Weapons table to arm your adventurer. Each entry represents a category — pick a specific weapon that fits the description.
+    </p>
+
+    <div class="rule-box" style="margin:1rem 0;">
+      <h4>⚔️ Weapons Table (d6)</h4>
+      <table class="med-table">
+        <thead><tr><th>d6</th><th>Weapon Category</th><th>Damage</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Dagger, Cudgel, Sickle, Staff, etc.</td><td>d6</td></tr>
+          <tr><td>2</td><td>Spear, Sword, Mace, Axe, Flail, etc.</td><td>d8</td></tr>
+          <tr><td>3</td><td>Halberd, War Hammer, Long Sword, etc.</td><td>d10 (bulky)</td></tr>
+          <tr><td>4</td><td>Sling</td><td>d6</td></tr>
+          <tr><td>5</td><td>Bow</td><td>d6 (bulky)</td></tr>
+          <tr><td>6</td><td>Crossbow</td><td>d8 (bulky)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="text-align:center; margin:1.5rem 0;">
+      <button class="btn btn-gold" onclick="rollWeapon()">Roll d6 ⚔️</button>
+    </div>
+
+    <div style="display:flex; justify-content:center; gap:0.75rem; margin-bottom:1rem;">
+      <div class="die-face" id="weapon-die">?</div>
+      <div style="display:flex; align-items:center; font-family:'Cinzel',serif; font-size:1.4rem; font-weight:900; color:var(--green-dark);">
+        <span id="weapon-result-label">—</span>
+      </div>
+    </div>
+
+    <div id="weapon-detail" style="display:none; text-align:center; margin:1rem 0;">
+      <div style="background:var(--parchment-light); border:2px solid var(--gold); border-radius:4px; padding:1rem; display:inline-block;">
+        <div style="font-family:'Cinzel',serif; font-size:1.1rem; font-weight:700; color:var(--ink);" id="weapon-detail-name">—</div>
+        <div style="font-family:'Cinzel',serif; font-size:0.9rem; color:var(--gold);" id="weapon-detail-stats">—</div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:1rem;">
+      <strong>Choose Your Weapon:</strong> The roll determines the category. Pick a specific weapon from that row — e.g., if you roll 2, you might choose a sword, an axe, a mace, or a flail. The Warden has final say on flavor.
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-outline" onclick="goToStep(5)">← Back</button>
+      <button class="btn" id="btn-step6-next" onclick="goToStep(7)" disabled>Additional Gear →</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 7: ADDITIONAL GEAR ===== -->
+  <div class="wizard-step" id="step-7">
+    <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Step Seven: Additional Gear</h3>
+    <p class="tutorial-text" style="text-align:center;">
+      All characters receive Additional Gear. Roll <strong>d100</strong> once normally. If you have no armor, roll again. If your background grants "Random Additional Gear", roll again.
+    </p>
+
+    <div id="addgear-info" class="callout" style="margin-bottom:1rem;">
+      <strong>Rolls needed:</strong> <span id="addgear-rolls-needed">1</span>
+      <span id="addgear-bonus-reasons"></span>
+      <div id="addgear-roll-counter" style="margin-top:0.5rem; font-size:0.85rem;"></div>
+    </div>
+
+    <div id="addgear-no-armor-note" class="callout" style="display:none; margin-bottom:1rem;">
+      <strong>No Armor Bonus:</strong> You rolled "None" for armor, so you get an extra Additional Gear roll.
+    </div>
+
+    <div id="addgear-bg-note" class="callout callout-gold" style="display:none; margin-bottom:1rem;">
+      <strong>Background Bonus:</strong> Your background includes "Random Additional Gear" — you get an extra roll.
+    </div>
+
+    <div id="addgear-detail" style="margin:1rem 0; display:none;">
+      <h4 style="font-family:'Cinzel',serif; font-size:0.9rem; color:var(--gold); margin-bottom:0.5rem;">Gear Rolled:</h4>
+      <ul id="addgear-items-list" style="list-style:none; padding:0; margin:0;"></ul>
+      <div id="addgear-roll-counter" style="text-align:center; margin-top:0.5rem; font-size:0.85rem; color:var(--ink-light);"></div>
+    </div>
+
+    <div style="text-align:center; margin:1.5rem 0;">
+      <button class="btn btn-gold" id="btn-roll-addgear" onclick="rollAdditionalGear()">Roll d100 🎒</button>
+    </div>
+
+    <div style="display:flex; justify-content:center; gap:0.75rem; margin-bottom:1rem;" id="addgear-die-container">
+      <div class="die-face" id="addgear-die" style="font-size:1.2rem;">?</div>
+      <div style="display:flex; align-items:center; font-family:'Cinzel',serif; font-size:1.2rem; font-weight:700; color:var(--green-dark);">
+        <span id="addgear-just-rolled">—</span>
+      </div>
+    </div>
+
+    <details style="margin-top:1.5rem; border:1px solid var(--parchment-dark); border-radius:4px;">
+      <summary style="padding:0.75rem 1rem; background:var(--parchment-light); cursor:pointer; font-family:'Cinzel',serif; font-size:0.9rem; font-weight:600; color:var(--green-dark);">📜 Full Additional Gear Table (d100)</summary>
+      <div style="padding:0.75rem 1rem; max-height:300px; overflow-y:auto; font-size:0.85rem; line-height:1.8; columns:2; column-gap:1.5rem;">
+        <div>1. Acid</div><div>2. Air Bladder</div><div>3. Alcohol</div><div>4. Antitoxin</div><div>5. Bandages (3 uses)</div><div>6. Bell</div><div>7. Bellows</div><div>8. Blanket</div><div>9. Boltcutters</div><div>10. Bowl</div><div>11. Cage</div><div>12. Caltrops</div><div>13. Candle (3 uses, dim)</div><div>14. Cards</div><div>15. Cart (+4 slots, bulky)</div><div>16. Chain (10ft)</div><div>17. Chalk (petty)</div><div>18. Chisel</div><div>19. Climbing Spikes</div><div>20. Cloak (petty)</div><div>21. Compass</div><div>22. Crowbar</div><div>23. Dice</div><div>24. Dowsing Rod</div><div>25. Explosive</div><div>26. Fan</div><div>27. Fiddle</div><div>28. Fire Oil</div><div>29. Fishing Rod</div><div>30. Flash Powder</div><div>31. Flour</div><div>32. Garrotte</div><div>33. Gloves (petty)</div><div>34. Glue</div><div>35. Goggles</div><div>36. Grappling Hook</div><div>37. Grease</div><div>38. Hammer</div><div>39. Hammock</div><div>40. Hand Drill</div><div>41. Honey</div><div>42. Hourglass</div><div>43. Incense</div><div>44. Ladder (10 ft, bulky)</div><div>45. Lantern</div><div>46. Leech (restores 1 STR, 3 uses)</div><div>47. Lens</div><div>48. Lock &amp; Key</div><div>49. Lockpick</div><div>50. Lodestone</div><div>51. Lute</div><div>52. Magnifying Glass</div><div>53. Manacles</div><div>54. Marbles</div><div>55. Mask</div><div>56. Metal File</div><div>57. Mirror</div><div>58. Mugwort</div><div>59. Net</div><div>60. Oil Can (6 uses)</div><div>61. Oilskin Bag</div><div>62. Pail</div><div>63. Paint</div><div>64. Parchment &amp; Ink (3 uses)</div><div>65. Perfume</div><div>66. Pickaxe</div><div>67. Pipe</div><div>68. Pliers</div><div>69. Poison</div><div>70. Pole (10ft)</div><div>71. Poncho (petty)</div><div>72. Pulley</div><div>73. Random Spellbook</div><div>74. Rope (25ft)</div><div>75. Sack</div><div>76. Saw</div><div>77. Scissors</div><div>78. Scroll of Random Spellbook (petty)</div><div>79. Sealable Bottle</div><div>80. Sedative</div><div>81. Sewing Kit</div><div>82. Sextant</div><div>83. Shovel</div><div>84. Signal Flag</div><div>85. Smokebomb</div><div>86. Smoking Herbs (3 uses)</div><div>87. Songbook</div><div>88. Spiked Boots</div><div>89. Spyglass</div><div>90. Stylus</div><div>91. Tar</div><div>92. Tent (fits 2, bulky)</div><div>93. Tongs</div><div>94. Trap (d6 STR damage)</div><div>95. Wagon (+8 slots, slow)</div><div>96. Waterproof Bag</div><div>97. Whetstone</div><div>98. Whistle (petty)</div><div>99. Wig</div><div>100. Wolfsbane</div>
+      </div>
+    </details>
+
+    <div class="step-nav">
+      <button class="btn btn-outline" onclick="goToStep(6)">← Back</button>
+      <button class="btn btn-gold" id="btn-step7-next" onclick="finishCharacter()" disabled>Complete Character ✨</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 1: ATTRIBUTES ===== -->
+  <div class="wizard-step" id="step-1">
+    <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Step One: Roll Your Attributes</h3>
+    <p class="tutorial-text" style="text-align:center;">
+      Roll <strong>3d6</strong> for each attribute. The result is your score — and your defense against attacks of that type. Click the button to roll all three at once, or roll them individually.
+    </p>
+
+    <div style="text-align:center; margin-bottom:1rem;">
+      <button class="btn btn-gold" onclick="rollAllAttributes()">Roll All Attributes 🎲</button>
+    </div>
+
+    <div class="attributes-grid" id="attr-grid">
+      <div class="attr-card" id="attr-str">
+        <div class="attr-name">Strength</div>
+        <div class="attr-abbr">STR</div>
+        <div class="attr-value" id="val-str">—</div>
+        <div class="attr-dice" id="dice-str"></div>
+      </div>
+      <div class="attr-card" id="attr-dex">
+        <div class="attr-name">Dexterity</div>
+        <div class="attr-abbr">DEX</div>
+        <div class="attr-value" id="val-dex">—</div>
+        <div class="attr-dice" id="dice-dex"></div>
+      </div>
+      <div class="attr-card" id="attr-wil">
+        <div class="attr-name">Willpower</div>
+        <div class="attr-abbr">WIL</div>
+        <div class="attr-value" id="val-wil">—</div>
+        <div class="attr-dice" id="dice-wil"></div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:1rem;">
+      <strong>Roll individually:</strong>
+      <span style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-top:0.35rem;">
+        <button class="btn btn-outline" style="font-size:0.78rem; padding:0.3rem 0.65rem;" onclick="rollSingleAttr('str')">STR</button>
+        <button class="btn btn-outline" style="font-size:0.78rem; padding:0.3rem 0.65rem;" onclick="rollSingleAttr('dex')">DEX</button>
+        <button class="btn btn-outline" style="font-size:0.78rem; padding:0.3rem 0.65rem;" onclick="rollSingleAttr('wil')">WIL</button>
+      </span>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-outline" onclick="goToStep(0)">← Back</button>
+      <button class="btn" id="btn-step1-next" onclick="goToStep(2)" disabled>Roll Hit Protection →</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 2: HP ===== -->
+  <div class="wizard-step" id="step-2">
+    <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Step Two: Roll Hit Protection</h3>
+    <p class="tutorial-text" style="text-align:center;">
+      Roll <strong>1d6</strong> for your Hit Protection. This represents your ability to avoid serious injury — not your health, but your luck, stamina, and reflexes in combat.
+    </p>
+
+    <div style="text-align:center; margin:1.5rem 0;">
+      <button class="btn btn-gold" onclick="rollHP()">Roll Hit Protection 🎲</button>
+    </div>
+
+    <div style="display:flex; justify-content:center; gap:0.75rem; margin-bottom:1rem;">
+      <div class="die-face" id="hp-die">?</div>
+      <div style="display:flex; align-items:center; font-family:'Cinzel',serif; font-size:1.8rem; font-weight:900; color:var(--red-soft);">
+        HP: <span id="hp-value">—</span>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Remember:</strong> When you take damage, HP is reduced first. When HP hits 0, further damage reduces your STR. When STR hits 0, you're critically wounded. HP can be restored by resting, but lost STR requires proper healing.
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-outline" onclick="goToStep(1)">← Back</button>
+      <button class="btn" id="btn-step2-next" onclick="goToStep(3)" disabled>Roll Background →</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 3: BACKGROUND ===== -->
+  <div class="wizard-step" id="step-3">
+    <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Step Three: Roll Your Background</h3>
+    <p class="tutorial-text" style="text-align:center;">
+      Your background represents what you did before becoming an adventurer. It determines your starting gear — the tools of your former trade. Roll <strong>d100</strong> (or 2d10 for tens and ones) and let fate decide who you were.
+    </p>
+
+    <div style="text-align:center; margin:1.5rem 0;">
+      <button class="btn btn-gold" id="btn-roll-bg" onclick="rollBackground()">Roll d100 🎲</button>
+      <button class="btn btn-outline" id="btn-reroll-bg" onclick="rollBackground()" style="display:none; margin-left:0.5rem;">Reroll d100 🎲</button>
+    </div>
+
+    <div style="display:flex; justify-content:center; gap:0.75rem; margin-bottom:1rem;">
+      <div class="die-face" id="bg-die" style="font-size:1.2rem;">?</div>
+      <div style="display:flex; align-items:center; font-family:'Cinzel',serif; font-size:1.4rem; font-weight:900; color:var(--green-dark);">
+        <span id="bg-roll-label">—</span>
+      </div>
+    </div>
+
+    <div class="bg-detail" id="bg-detail">
+      <h4 id="bg-detail-name"></h4>
+      <p style="font-family:'Cormorant Garamond',serif; font-style:italic; margin-bottom:0.75rem;" id="bg-detail-desc"></p>
+      <h5 style="font-family:'Cinzel',serif; font-size:0.8rem; color:var(--gold); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.5rem;">Starting Gear</h5>
+      <ul class="gear-list" id="bg-detail-gear"></ul>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-outline" onclick="goToStep(2)">← Back</button>
+      <button class="btn" id="btn-step3-next" onclick="goToStep(4)" disabled>Roll Gold &amp; Name →</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 4: GOLD & NAME ===== -->
+  <div class="wizard-step" id="step-4">
+    <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark);">Step Four: Gold &amp; Name</h3>
+
+    <div style="margin-bottom:1.5rem;">
+      <h4 style="font-family:'Cinzel',serif; font-size:1rem; color:var(--green-dark); margin-bottom:0.5rem;">Roll Starting Gold</h4>
+      <p class="tutorial-text" style="text-align:center;">
+        Roll <strong>3d6</strong> for your starting gold pieces. All adventurers also begin with a torch, three days' rations, and a waterskin.
+      </p>
+
+      <div style="text-align:center; margin:1rem 0;">
+        <button class="btn btn-gold" onclick="rollGold()">Roll Gold 🪙</button>
+      </div>
+
+      <div style="display:flex; justify-content:center; gap:0.5rem; margin-bottom:0.5rem;">
+        <div class="die-face" id="gold-d1">?</div>
+        <div class="die-face" id="gold-d2">?</div>
+        <div class="die-face" id="gold-d3">?</div>
+      </div>
+      <div style="text-align:center; font-family:'Cinzel',serif; font-size:1.5rem; font-weight:700; color:var(--gold);">
+        <span id="gold-value">—</span> gp
+      </div>
+    </div>
+
+    <div class="rule-box" style="margin:1.5rem 0;">
+      <h4>🎒 Universal Starting Gear</h4>
+      <ul class="gear-list">
+        <li>A torch</li>
+        <li>Three days' rations</li>
+        <li>A waterskin</li>
+      </ul>
+    </div>
+
+    <div style="margin-top:1.5rem;">
+      <h4 style="font-family:'Cinzel',serif; font-size:1rem; color:var(--green-dark); margin-bottom:0.5rem;">Roll Your Name</h4>
+      <p class="tutorial-text" style="text-align:center;">
+        Roll d100 on the name tables to discover who you are. The forest already knows your name — now you will too.
+      </p>
+
+      <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:0.75rem; margin:1rem 0;">
+        <button class="btn" onclick="rollGivenName()">Roll Given Name 🎲</button>
+        <button class="btn" onclick="rollFamilyName()">Roll Family Name 🎲</button>
+        <button class="btn btn-outline" onclick="rollBothNames()">Reroll Both 🎲</button>
+      </div>
+
+      <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:1rem; margin:1rem 0;">
+        <div style="text-align:center;">
+          <div style="font-family:'Cinzel',serif; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-light); margin-bottom:0.25rem;">Given (d100)</div>
+          <div class="die-face" id="name-given-die" style="font-size:1rem; margin-bottom:0.25rem;">?</div>
+          <div id="name-given-label" style="font-family:'Cinzel',serif; font-size:1.1rem; font-weight:700; color:var(--green-dark);">—</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-family:'Cinzel',serif; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-light); margin-bottom:0.25rem;">Family (d100)</div>
+          <div class="die-face" id="name-family-die" style="font-size:1rem; margin-bottom:0.25rem;">?</div>
+          <div id="name-family-label" style="font-family:'Cinzel',serif; font-size:1.1rem; font-weight:700; color:var(--green-dark);">—</div>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top:0.75rem;">
+        <div style="font-family:'UnifrakturMaguntia',cursive; font-size:clamp(1.6rem,4vw,2.2rem); color:var(--ink);" id="name-full-display">—</div>
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-outline" onclick="goToStep(3)">← Back</button>
+      <button class="btn" id="btn-step4-next" onclick="goToStep(5)" disabled>Roll Armor →</button>
+    </div>
+  </div>
+
+  <!-- ===== CHARACTER SHEET (STEP 8) ===== -->
+  <div class="wizard-step" id="step-8">
+    <h3 style="font-size:1.3rem; margin-bottom:0.75rem; color:var(--green-dark); text-align:center;">Your Adventurer</h3>
+
+    <div class="char-sheet" id="char-sheet">
+      <div class="char-name-display" id="sheet-name">—</div>
+      <div class="char-bg-display" id="sheet-bg">—</div>
+
+      <div class="sheet-section">
+        <h5>Attributes</h5>
+        <div class="sheet-attrs">
+          <div class="sheet-attr"><div class="sa-label">STR</div><div class="sa-val" id="sheet-str">—</div></div>
+          <div class="sheet-attr"><div class="sa-label">DEX</div><div class="sa-val" id="sheet-dex">—</div></div>
+          <div class="sheet-attr"><div class="sa-label">WIL</div><div class="sa-val" id="sheet-wil">—</div></div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+        <div class="sheet-hp" style="flex:1; min-width:120px;">
+          <span class="hp-label">HP</span>
+          <span class="hp-val" id="sheet-hp">—</span>
+        </div>
+        <div class="sheet-gold" style="flex:1; min-width:120px;">
+          <span class="gold-label">Gold</span>
+          <span class="gold-val" id="sheet-gold">—</span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:1.5rem;" id="sheet-armor-weapon-row">
+        <div class="sheet-hp" style="flex:1; min-width:140px;">
+          <span class="hp-label">Armor</span>
+          <span class="hp-val" id="sheet-armor" style="font-size:1.2rem;">—</span>
+        </div>
+        <div class="sheet-gold" style="flex:1; min-width:140px;">
+          <span class="gold-label">Weapon</span>
+          <span class="gold-val" id="sheet-weapon" style="font-size:1rem;">—</span>
+        </div>
+      </div>
+
+      <div class="sheet-section">
+        <h5>Inventory</h5>
+        <div class="sheet-gear" id="sheet-gear"></div>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:1.5rem; display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+      <button class="btn" onclick="printSheet()">🖨️ Print Sheet</button>
+      <button class="btn btn-red" onclick="resetForge()">🔄 Create New Character</button>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================== -->
+<!--  REFERENCE SECTION                                                       -->
+<!-- ====================================================================== -->
+<section id="reference" class="parchment-box">
+  <h2 class="section-title">Warden's Reference</h2>
+  <p class="section-subtitle">Quick rules at a glance</p>
+
+  <div class="ornament">📖</div>
+
+  <!-- ACCORDION: SAVES -->
+  <div class="accordion-item">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span>Saving Throws</span>
+      <span class="arrow">▸</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <p>When the outcome of an action is uncertain and carries risk, the character makes a <strong>Save</strong>. Roll <strong>1d20</strong> and compare it to the relevant attribute:</p>
+        <ul style="margin-left:1.25rem; line-height:2.2; margin-top:0.5rem;">
+          <li><strong>STR Save:</strong> Resisting force, breaking free, enduring physical strain, resisting poison</li>
+          <li><strong>DEX Save:</strong> Dodging, catching, reacting quickly, acrobatics, sneaking</li>
+          <li><strong>WIL Save:</strong> Persuading, deceiving, intimidating, spellcasting, resisting charm</li>
+        </ul>
+        <div class="callout" style="margin-top:1rem;">
+          <strong>Roll Under:</strong> You succeed if you roll <em>equal to or less than</em> your attribute score. A STR 12 character succeeds on a STR save with a roll of 1–12.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCORDION: ATTACKS -->
+  <div class="accordion-item">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span>Attack &amp; Damage</span>
+      <span class="arrow">▸</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <p><strong>Melee Attack:</strong> Attacker rolls 1d20 vs target's STR. Roll ≤ STR = hit.</p>
+        <p><strong>Ranged Attack:</strong> Attacker rolls 1d20 vs target's DEX. Roll ≤ DEX = hit.</p>
+        <p style="margin-top:1rem;"><strong>Damage is determined by the weapon:</strong></p>
+        <table class="med-table" style="margin-top:0.5rem;">
+          <thead><tr><th>Weapon</th><th>Damage</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>Dagger</td><td>1d4</td><td>Concealable, close quarters</td></tr>
+            <tr><td>Staff</td><td>1d4</td><td>Two-handed</td></tr>
+            <tr><td>Sword</td><td>1d8</td><td>Standard sidearm</td></tr>
+            <tr><td>Axe</td><td>1d8</td><td>Can be thrown</td></tr>
+            <tr><td>Spear</td><td>1d6</td><td>Reach, can be thrown</td></tr>
+            <tr><td>Bow</td><td>1d6</td><td>Ranged, requires arrows</td></tr>
+            <tr><td>Crossbow</td><td>1d8</td><td>Ranged, slow to reload</td></tr>
+            <tr><td>Unarmed</td><td>1d4</td><td>—</td></tr>
+          </tbody>
+        </table>
+        <div class="callout callout-gold" style="margin-top:1rem;">
+          <strong>Critical Damage:</strong> If damage reduces a character to 0 HP, any remaining damage reduces STR. If STR reaches 0, the character is critically wounded and will die without aid.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCORDION: ARMOR -->
+  <div class="accordion-item">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span>Armor &amp; Shields</span>
+      <span class="arrow">▸</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <p>Armor reduces incoming damage by a flat amount:</p>
+        <table class="med-table" style="margin-top:0.5rem;">
+          <thead><tr><th>Armor</th><th>Reduction</th><th>Slots</th></tr></thead>
+          <tbody>
+            <tr><td>No Armor</td><td>0</td><td>0</td></tr>
+            <tr><td>Light Armor (Leather, Padded)</td><td>1</td><td>1</td></tr>
+            <tr><td>Medium Armor (Chain, Scale)</td><td>2</td><td>2</td></tr>
+            <tr><td>Heavy Armor (Plate)</td><td>3</td><td>2</td></tr>
+            <tr><td>Shield</td><td>+1</td><td>1</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:1rem;"><strong>Note:</strong> Armor does not make you harder to hit — it reduces the damage that gets through. Your <em>attribute</em> is your defense. Armor is mitigation.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCORDION: ENCUMBRANCE -->
+  <div class="accordion-item">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span>Encumbrance &amp; Inventory</span>
+      <span class="arrow">▸</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <p>Characters have <strong>10 inventory slots</strong>. Most items occupy 1 slot. Bulky items occupy 2 slots.</p>
+        <ul style="margin-left:1.25rem; line-height:2; margin-top:0.5rem;">
+          <li><strong>1 slot:</strong> Weapon, armor piece, tool, torch, rations, potion, scroll</li>
+          <li><strong>2 slots:</strong> Bulky items (large weapons, heavy treasure, big packs)</li>
+          <li><strong>0 slots:</strong> Small items (rings, coins, keys, notes)</li>
+        </ul>
+        <div class="callout" style="margin-top:1rem;">
+          <strong>Overburdened:</strong> If you exceed 10 slots, you cannot move. You must drop items to continue. Choose wisely what you carry — and what you leave behind.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCORDION: REACTIONS -->
+  <div class="accordion-item">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span>Reaction &amp; Morale</span>
+      <span class="arrow">▸</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <p><strong>Reaction Roll (2d6):</strong> When encountering a creature, roll to determine its initial disposition:</p>
+        <table class="med-table" style="margin-top:0.5rem;">
+          <thead><tr><th>2d6</th><th>Reaction</th></tr></thead>
+          <tbody>
+            <tr><td>2</td><td>Hostile — attacks immediately</td></tr>
+            <tr><td>3–5</td><td>Unfriendly — may attack if provoked</td></tr>
+            <tr><td>6–8</td><td>Neutral — uncertain, wary</td></tr>
+            <tr><td>9–11</td><td>Friendly — open to parley</td></tr>
+            <tr><td>12</td><td>Helpful — offers aid freely</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:1rem;"><strong>Morale (2d6):</strong> When creatures take losses or face overwhelming force, roll 2d6 vs their Morale score. If the roll exceeds their Morale, they flee or surrender.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCORDION: REST -->
+  <div class="accordion-item">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span>Rest &amp; Recovery</span>
+      <span class="arrow">▸</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <ul style="margin-left:1.25rem; line-height:2.2;">
+          <li><strong>Short Rest:</strong> A brief respite. Restore all lost HP. Can't recover STR this way.</li>
+          <li><strong>Long Rest:</strong> A full night's sleep in safety. Restore 1d4 STR and all HP. Requires food and shelter.</li>
+          <li><strong>Full Recovery:</strong> A week of rest and proper care. Restore all STR and HP.</li>
+        </ul>
+        <div class="callout callout-gold" style="margin-top:1rem;">
+          <strong>Cost of Rest:</strong> Rest requires safety. A short rest in a dungeon invites wandering monsters. A long rest requires a secure camp. There is no free healing in Cairn.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCORDION: SCARS -->
+  <div class="accordion-item">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span>Scars &amp; Critical Wounds</span>
+      <span class="arrow">▸</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-content">
+        <p>When a character reaches 0 STR, they are <strong>critically wounded</strong>. If they survive (with aid), roll 1d6 on the Scars table:</p>
+        <table class="med-table" style="margin-top:0.5rem;">
+          <thead><tr><th>1d6</th><th>Scar</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Lost limb — permanently reduce STR by 1d4</td></tr>
+            <tr><td>2</td><td>Scarred face — permanently reduce WIL by 1d4</td></tr>
+            <tr><td>3</td><td>Battered body — permanently reduce STR by 1d4</td></tr>
+            <tr><td>4</td><td>Shattered nerves — permanently reduce DEX by 1d4</td></tr>
+            <tr><td>5</td><td>Haunted mind — permanently reduce WIL by 1d4</td></tr>
+            <tr><td>6</td><td>Marked by fate — permanently reduce a random attribute by 1d4, but gain a strange ability</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:1rem;">Scars are permanent. They tell the story of what your character has survived — and what it cost them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== FOOTER ====== -->
+<footer>
+  <p>Cairn was created by <a href="https://cairnrpg.com" target="_blank" rel="noopener">Yochai Gal</a>. This interactive tutorial is a fan-made tool.</p>
+  <p style="margin-top:0.5rem;">Cairn is free, open-source, and released under a Creative Commons license.</p>
+  <div class="ornament" style="margin-top:1rem;">❧</div>
+</footer>
+
+</div><!-- end page-wrapper -->
+
+<!-- ====================================================================== -->
+<!--  JAVASCRIPT                                                             -->
+<!-- ====================================================================== -->
+<script>
+// ===== STATE =====
+const character = {
+  name: '',
+  attributes: { str: null, dex: null, wil: null },
+  attrDice: { str: [], dex: [], wil: [] },
+  hp: null,
+  gold: null,
+  goldDice: [],
+  background: null,
+  armor: null,
+  weapon: null,
+  additionalGear: [],
+  additionalGearRollsNeeded: 1,
+  additionalGearRollsCompleted: 0,
+  startingGear: ['Rations (3 uses)', 'Torch (3 uses)'] // All PCs get these
+};
+
+let currentStep = 0;
+let givenNameRoll = null;
+let familyNameRoll = null;
+
+// ===== CAIRN NAME TABLES (Official Barebones Edition) =====
+const givenNames = ['Adair','Alaric','Alder','Amaris','Anwen','Arlo','Ash','Aster','Ballad','Barley','Basil','Beatrix','Birch','Bram','Briar','Brook','Bryn','Cai','Callan','Carver','Cedric','Cinder','Cliff','Corin','Crow','Dain','Darnel','Dax','Dorian','Eira','Elowen','Ember','Eon','Evander','Falcon','Faris','Fern','Finch','Flint','Freya','Gale','Garen','Hazel','Hemlock','Idris','Ivy','Juniper','Kael','Kavi','Keir','Leif','Liora','Lucan','Lyra','Lysander','Marius','Marlowe','Milo','Moss','Nazira','Neria','Noa','Nyx','Onyx','Orla','Pan','Patch','Perran','Quill','Rain','Reed','River','Robin','Rowan','Rune','Rush','Rye','Sable','Sage','Selene','Shade','Silas','Sky','Soren','Sparrow','Stellan','Stone','Storm','Talon','Thistle','Thorn','Thresh','Valen','Vesper','Vex','Willow','Winslow','Wisp','Wren','Yarrow'];
+
+const familyNames = ['Abbot','Addyman','Ashwell','Balfe','Baxter','Bevan','Beran','Blackwood','Bowen','Brewer','Broder','Bukharin','Cadwallan','Carter','Cobb','Collier','Cooper','Crowther','Dempsey','Dermody','Domański','Dymov','Fairweather','Fedorov','Fletcher','Fuller','Galen','Glinka','Glover','Golubov','Gradnik','Granger','Grobar','Halberg','Harkin','Hlebar','Hromada','Horgan','Iliev','Ivanec','Joryn','Kamensk','Kavanagh','Kovac','Kovalenko','Kravec','Krznar','Kuchar','Kvasnikov','Lethbridge','Llewellyn','Locke','Lovett','Lukanov','Maddox','Malinov','Marinov','Markov','Mason','Melnik','Mercer','Milner','Morozov','Novak','Obradov','O\'Callaghan','O\'Farrell','O\'Leary','Osipov','Pavlenko','Pekar','Petrov','Pisarev','Powell','Price','Radoslav','Reeve','Rogov','Romanov','Rowanfield','Rybak','Sawyer','Shepherd','Shevchenko','Slater','Smirnov','Sokolov','Tanner','Thatcher','Tallow','Vukovic','Webb','Whitlock','Wicklowe','Wightman','Wilkin','Wright','Wynne','Yarrow','Zidar'];
+
+// ===== BACKGROUNDS DATA (Official Cairn Barebones d100 table) =====
+const cairnBackgrounds = {
+  1: { name: 'Acolyte', gear: ['Incense', 'Parchment & Ink (3 uses)', 'random Spellbook'] },
+  2: { name: 'Acrobat', gear: ['Pole (10ft)', 'Rope (25ft)', 'Smokebomb'] },
+  3: { name: 'Alchemist', gear: ['Acid', 'Lens', 'Oilskin Bag'] },
+  4: { name: 'Apothecary', gear: ['Antitoxin', 'Bandages (3 uses)', 'Sealable Bottle'] },
+  5: { name: 'Assassin', gear: ['Garrotte', 'Mask', 'Poison'] },
+  6: { name: 'Astrologer', gear: ['Candle (3 uses, dim)', 'Marbles', 'Spyglass'] },
+  7: { name: 'Baker', gear: ['Flour', 'Honey', 'Sealable Bottle'] },
+  8: { name: 'Barber-Surgeon', gear: ['Bandages (3 uses)', 'Scissors', 'Sedative'] },
+  9: { name: 'Barkeep', gear: ['Alcohol', 'Sealable Bottle', 'Sedative'] },
+  10: { name: 'Beadle', gear: ['Bell', 'Gloves (petty)', 'Whistle (petty)'] },
+  11: { name: 'Beekeeper', gear: ['Fire Oil', 'Gloves (petty)', 'Honey'] },
+  12: { name: 'Bell Ringer', gear: ['Gloves (petty)', 'Rope (25 ft)', 'Whistle (petty)'] },
+  13: { name: 'Bird Keeper', gear: ['Cage', 'Net', 'Whistle (petty)'] },
+  14: { name: 'Blacksmith', gear: ['Bellows', 'Hammer', 'Iron Tongs'] },
+  15: { name: 'Bookbinder', gear: ['Glue', 'Parchment & Ink (3 uses)', 'Sewing Kit'] },
+  16: { name: 'Bounty Hunter', gear: ['Flash Powder', 'Manacles', 'Rope (25 ft)'] },
+  17: { name: 'Butcher', gear: ['Pail', 'Saw', 'Whetstone'] },
+  18: { name: 'Carpenter', gear: ['Hammer', 'Metal File', 'Saw'] },
+  19: { name: 'Cartographer', gear: ['Compass', 'Parchment & Ink (3 uses)', 'Sextant'] },
+  20: { name: 'Cartwright', gear: ['Hand Drill', 'Pulley', 'Saw'] },
+  21: { name: 'Chandler', gear: ['Candle (3 uses, dim)', 'Honey', 'Perfume'] },
+  22: { name: 'Charlatan', gear: ['Cards', 'Paint', 'Perfume'] },
+  23: { name: 'Chimney Sweep', gear: ['Bellows', 'Climbing Spikes', 'Rope (25 ft)'] },
+  24: { name: 'Clockmaker', gear: ['Magnifying Glass', 'Metal File', 'Pliers'] },
+  25: { name: 'Cobbler', gear: ['Pliers', 'Sack', 'Sewing Kit'] },
+  26: { name: 'Cook', gear: ['Flour', 'Pail', 'Smoking Herbs (3 uses)'] },
+  27: { name: 'Cooper', gear: ['Hammer', 'Hand Drill', 'Saw'] },
+  28: { name: 'Courier', gear: ['Bell', 'Compass', 'Parchment & Ink (3 uses)'] },
+  29: { name: 'Crypt Custodian', gear: ['Incense', 'Lantern', 'Oil Can (6 uses)'] },
+  30: { name: 'Cultist', gear: ['Incense', 'Mask', 'Scroll of Random Spellbook (petty)'] },
+  31: { name: 'Demolitionist', gear: ['Explosive', 'Goggles', 'Grease'] },
+  32: { name: 'Dowser', gear: ['Dowsing Rod', 'Sealable Bottle', 'Shovel'] },
+  33: { name: 'Duelist', gear: ['Cloak (petty)', 'Gloves (petty)', 'Whetstone'] },
+  34: { name: 'Entertainer', gear: ['Dice', 'Songbook', 'Wig'] },
+  35: { name: 'Executioner', gear: ['Mask', 'Rope (25 ft)', 'Whetstone'] },
+  36: { name: 'Falconer', gear: ['Cage', 'Gloves (petty)', 'Whistle (petty)'] },
+  37: { name: 'Farmer', gear: ['Rope (25 ft)', 'Sack', 'Shovel'] },
+  38: { name: 'Fence', gear: ['Bolt Cutters', 'Random Additional Gear', 'Sack'] },
+  39: { name: 'Fisher', gear: ['Air Bladder', 'Fishing Rod', 'Net'] },
+  40: { name: 'Fletcher', gear: ['Sack', 'Trap', 'Whetstone'] },
+  41: { name: 'Gambler', gear: ['Alcohol', 'Cards', 'Dice'] },
+  42: { name: 'Gardener', gear: ['Gloves (petty)', 'Sack', 'Shovel'] },
+  43: { name: 'Glassblower', gear: ['Goggles', 'Lens', 'Pliers'] },
+  44: { name: 'Gong Farmer', gear: ['Gloves (petty)', 'Sack', 'Shovel'] },
+  45: { name: 'Gravedigger', gear: ['Alcohol', 'Ladder', 'Shovel'] },
+  46: { name: 'Guard', gear: ['Lantern', 'Manacles', 'Whistle (petty)'] },
+  47: { name: 'Herald', gear: ['Mask', 'Signal Flag', 'Whistle (petty)'] },
+  48: { name: 'Herbalist', gear: ['Antitoxin', 'Mugwort', 'Sack'] },
+  49: { name: 'Hermit', gear: ['Blanket', 'Pole (10 ft)', 'Smoking Herbs (3 uses)'] },
+  50: { name: 'Highway Robber', gear: ['Grappling Hook', 'Rope (25 ft)', 'Signal Flag'] },
+  51: { name: 'Hunter', gear: ['Trap', 'Rope (25 ft)', 'Smoking Herbs (3 uses)'] },
+  52: { name: 'Illusionist', gear: ['Candle (3 uses, dim)', 'Flash Powder', 'Mirror'] },
+  53: { name: 'Innkeeper', gear: ['Alcohol', 'Bandages (3 uses)', 'Parchment & Ink (3 uses)'] },
+  54: { name: 'Jailer', gear: ['Chain (10ft)', 'Manacles', 'Whistle (petty)'] },
+  55: { name: 'Jester', gear: ['Cards', 'Lute', 'Perfume'] },
+  56: { name: 'Jeweler', gear: ['Magnifying Glass', 'Pliers', 'Tongs'] },
+  57: { name: 'Knight', gear: ['Gloves (petty)', 'Signal Flag', 'Whetstone'] },
+  58: { name: 'Lamplighter', gear: ['Ladder (10ft, bulky)', 'Oil Can (6 uses)', 'Whistle (petty)'] },
+  59: { name: 'Leech Collector', gear: ['Gloves (petty)', 'Leech (restores 1 STR, 3 uses)', 'Net'] },
+  60: { name: 'Librarian', gear: ['Candle (3 uses, dim)', 'Parchment & Ink (3 uses)', 'random Scroll (petty)'] },
+  61: { name: 'Locksmith', gear: ['Lock & Key', 'Metal File', 'Pliers'] },
+  62: { name: 'Lumberjack', gear: ['Rope (25 ft)', 'Saw', 'Whetstone'] },
+  63: { name: 'Mason', gear: ['Chisel', 'Fan', 'Hammer'] },
+  64: { name: 'Merchant', gear: ['Random Additional Gear', 'Stylus', 'Wagon (+8 slots, slow)'] },
+  65: { name: 'Miller', gear: ['Bowl', 'Flour', 'Rope (25 ft)'] },
+  66: { name: 'Miner', gear: ['Lantern', 'Lodestone', 'Pickaxe'] },
+  67: { name: 'Monk', gear: ['Candle (3 uses, dim)', 'Cloak (petty)', 'Songbook'] },
+  68: { name: 'Musician', gear: ['Bowl', 'Fiddle', 'Songbook'] },
+  69: { name: 'Naturalist', gear: ['Hammock', 'Rope (25ft)', 'Spyglass'] },
+  70: { name: 'Navigator', gear: ['Compass', 'Poncho (petty)', 'Spyglass'] },
+  71: { name: 'Oil Collector', gear: ['Lantern', 'Oil Can (6 uses)', 'Sealable Bottle'] },
+  72: { name: 'Painter', gear: ['Paint', 'Parchment & Ink (3 uses)', 'Stylus'] },
+  73: { name: 'Peddler', gear: ['Cart (+4 slots, bulky)', 'Random Additional Gear', 'Sack'] },
+  74: { name: 'Philosopher', gear: ['Chalk (petty)', 'Parchment & Ink', 'Pipe'] },
+  75: { name: 'Physician', gear: ['Antitoxin', 'Bandages (3 uses)', 'Crowbar'] },
+  76: { name: 'Pilgrim', gear: ['Blanket', 'Pole (10 ft)', 'Poncho (petty)'] },
+  77: { name: 'Potter', gear: ['Chisel', 'Pail', 'Tongs'] },
+  78: { name: 'Priest', gear: ['Bandages (3 uses)', 'Candle (3 uses, dim)', 'Incense'] },
+  79: { name: 'Prospector', gear: ['Lantern', 'Lodestone', 'Pickaxe'] },
+  80: { name: 'Rat Catcher', gear: ['Sack', 'Trap', 'Whistle (petty)'] },
+  81: { name: 'Sailor', gear: ['Hammock', 'Rope (50 ft)', 'Spyglass'] },
+  82: { name: 'Scribe', gear: ['Candle (3 uses, dim)', 'Parchment & Ink (3 uses)', 'Stylus'] },
+  83: { name: 'Shepherd', gear: ['Cloak (petty)', 'Rope (25 ft)', 'Whistle (petty)'] },
+  84: { name: 'Smuggler', gear: ['Lock & Key', 'Oilskin Bag', 'Rope (25 ft)'] },
+  85: { name: 'Soldier', gear: ['Spiked Boots', 'Tent (fits 2, bulky)', 'Whetstone'] },
+  86: { name: 'Spy', gear: ['Disguise Kit', 'Garrotte', 'Mirror'] },
+  87: { name: 'Stablehand', gear: ['Blanket', 'Rope (25ft)', 'Shovel'] },
+  88: { name: 'Street Preacher', gear: ['Bell', 'Parchment & Ink', 'Scroll of Random Spellbook (petty)'] },
+  89: { name: 'Tailor', gear: ['Cloak (petty)', 'Scissors', 'Sewing Kit'] },
+  90: { name: 'Tanner', gear: ['Gloves (petty)', 'Pliers', 'Tar'] },
+  91: { name: 'Tax Collector', gear: ['Parchment & Ink (3 uses)', 'Sealable Bottle', 'Whistle (petty)'] },
+  92: { name: 'Thief', gear: ['Caltrops', 'Grappling Hook', 'Lockpick'] },
+  93: { name: 'Tinker', gear: ['Grease', 'Hammer', 'Pliers'] },
+  94: { name: 'Toll Keeper', gear: ['Bell', 'Lock & Key', 'Waterproof Bag'] },
+  95: { name: 'Toymaker', gear: ['Glue', 'Pliers', 'Scissors'] },
+  96: { name: 'Vagabond', gear: ['Blanket', 'Poncho (petty)', 'Rope (25 ft)'] },
+  97: { name: 'Vintner', gear: ['Alcohol', 'Rope (25 ft)', 'Sealable Bottle'] },
+  98: { name: 'Weaver', gear: ['Perfume', 'Rope (25 ft)', 'Scissors'] },
+  99: { name: 'Witch', gear: ['Candle (3 uses, dim)', 'Spellbook', 'Wolfsbane'] },
+  100: { name: 'Witchfinder', gear: ['Rope (25 ft)', 'Scroll of Random Spellbook (petty)', 'Spyglass'] }
+};
+
+// ===== NAV =====
+function scrollToSection(id) {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// ===== TABS =====
+function switchTab(group, id) {
+  const container = event.target.closest('.tab-container');
+  container.querySelectorAll('.tab-header').forEach(h => h.classList.remove('active'));
+  container.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(group + '-' + id).classList.add('active');
+}
+
+// ===== ACCORDION =====
+function toggleAccordion(header) {
+  const item = header.parentElement;
+  const wasOpen = item.classList.contains('open');
+  // Close all in this section
+  item.parentElement.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+}
+
+// ===== DICE HELPERS =====
+function rollDie(sides) {
+  return Math.floor(Math.random() * sides) + 1;
+}
+
+function rollDice(count, sides) {
+  const results = [];
+  for (let i = 0; i < count; i++) results.push(rollDie(sides));
+  return results;
+}
+
+// ===== STEP NAVIGATION =====
+function goToStep(step) {
+  document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-' + step).classList.add('active');
+  currentStep = step;
+
+  // Update dots
+  for (let i = 0; i <= 4; i++) {
+    const dot = document.getElementById('dot-' + i);
+    dot.classList.remove('current', 'completed');
+    if (i < step) dot.classList.add('completed');
+    if (i === step) dot.classList.add('current');
+  }
+  if (step === 5) {
+    // All completed
+    for (let i = 0; i <= 4; i++) {
+      document.getElementById('dot-' + i).classList.remove('current');
+      document.getElementById('dot-' + i).classList.add('completed');
+    }
+  }
+
+  // Scroll to forge
+  document.getElementById('forge').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Initialize step 7 (Additional Gear) when entering it
+  if (step === 7) {
+    initAdditionalGearStep();
+  }
+}
+
+// ===== ROLL ALL ATTRIBUTES =====
+function rollAllAttributes() {
+  const attrs = ['str', 'dex', 'wil'];
+  attrs.forEach((attr, idx) => {
+    setTimeout(() => rollSingleAttr(attr), idx * 150);
+  });
+
+  // Enable next after all done
+  setTimeout(() => {
+    const allRolled = attrs.every(a => character.attributes[a] !== null);
+    if (allRolled) {
+      document.getElementById('btn-step1-next').disabled = false;
+    }
+  }, attrs.length * 150 + 300);
+}
+
+function rollSingleAttr(attr) {
+  const dice = rollDice(3, 6);
+  const total = dice.reduce((a, b) => a + b, 0);
+
+  character.attributes[attr] = total;
+  character.attrDice[attr] = dice;
+
+  // Animate
+  const card = document.getElementById('attr-' + attr);
+  card.classList.add('rolled');
+
+  const valEl = document.getElementById('val-' + attr);
+  valEl.textContent = total;
+
+  // Show individual dice
+  const diceEl = document.getElementById('dice-' + attr);
+  diceEl.innerHTML = dice.map(d => `<span class="mini-die">${d}</span>`).join('');
+
+  // Brief animation on the value
+  valEl.style.transform = 'scale(1.3)';
+  valEl.style.color = 'var(--gold)';
+  setTimeout(() => {
+    valEl.style.transform = 'scale(1)';
+    valEl.style.color = 'var(--ink)';
+  }, 300);
+
+  // Check if all rolled
+  const attrs = ['str', 'dex', 'wil'];
+  const allRolled = attrs.every(a => character.attributes[a] !== null);
+  if (allRolled) {
+    document.getElementById('btn-step1-next').disabled = false;
+  }
+}
+
+// ===== ROLL HP =====
+function rollHP() {
+  const result = rollDie(6);
+  character.hp = result;
+
+  const dieEl = document.getElementById('hp-die');
+  dieEl.textContent = result;
+  dieEl.classList.add('rolling');
+  setTimeout(() => dieEl.classList.remove('rolling'), 500);
+
+  document.getElementById('hp-value').textContent = result;
+  document.getElementById('btn-step2-next').disabled = false;
+}
+
+// ===== ROLL BACKGROUND =====
+function rollBackground() {
+  const roll = Math.floor(Math.random() * 100) + 1; // 1-100
+  character.background = roll;
+
+  const bg = cairnBackgrounds[roll];
+
+  // Animate die
+  const dieEl = document.getElementById('bg-die');
+  dieEl.textContent = roll;
+  dieEl.classList.add('rolling');
+  dieEl.classList.add('highlight');
+  setTimeout(() => dieEl.classList.remove('rolling'), 500);
+
+  document.getElementById('bg-roll-label').textContent = roll + ' — ' + bg.name;
+
+  // Show detail
+  const detail = document.getElementById('bg-detail');
+  detail.classList.add('visible');
+  document.getElementById('bg-detail-name').textContent = bg.name;
+  // New Barebones backgrounds don't have descriptions — show gear only
+  document.getElementById('bg-detail-desc').textContent = '';
+
+  const gearList = document.getElementById('bg-detail-gear');
+  gearList.innerHTML = bg.gear.map(g => `<li>${g}</li>`).join('');
+
+  // Show reroll button, hide initial roll button
+  document.getElementById('btn-reroll-bg').style.display = 'inline-flex';
+
+  document.getElementById('btn-step3-next').disabled = false;
+
+  // Scroll to detail
+  detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ===== ARMOR DATA =====
+const armorTable = {
+  1: { name: 'None', armor: 0, slots: 0, note: 'Roll for Additional Gear' },
+  2: { name: 'Shield', armor: 1, slots: 1, note: '+1 Armor' },
+  3: { name: 'Helmet', armor: 1, slots: 1, note: '+1 Armor' },
+  4: { name: 'Gambeson', armor: 1, slots: 1, note: '+1 Armor' },
+  5: { name: 'Chainmail', armor: 2, slots: 2, note: '2 Armor, bulky' },
+  6: { name: 'Plate', armor: 3, slots: 3, note: '3 Armor, bulky' }
+};
+
+// ===== WEAPONS DATA =====
+const weaponsTable = {
+  1: { name: 'Light Weapon (Dagger, Cudgel, Staff, etc.)', damage: 'd6', slots: 1, bulky: false },
+  2: { name: 'Medium Weapon (Spear, Sword, Axe, etc.)', damage: 'd8', slots: 1, bulky: false },
+  3: { name: 'Heavy Weapon (Halberd, Long Sword, etc.)', damage: 'd10', slots: 2, bulky: true },
+  4: { name: 'Sling', damage: 'd6', slots: 1, bulky: false },
+  5: { name: 'Bow', damage: 'd6', slots: 2, bulky: true },
+  6: { name: 'Crossbow', damage: 'd8', slots: 3, bulky: true }
+};
+
+// ===== ADDITIONAL GEAR DATA =====
+const additionalGearTable = {
+  1: 'Acid', 2: 'Air Bladder', 3: 'Alcohol', 4: 'Antitoxin', 5: 'Bandages (3 uses)',
+  6: 'Bell', 7: 'Bellows', 8: 'Blanket', 9: 'Boltcutters', 10: 'Bowl',
+  11: 'Cage', 12: 'Caltrops', 13: 'Candle (3 uses, dim)', 14: 'Cards', 15: 'Cart (+4 slots, bulky)',
+  16: 'Chain (10ft)', 17: 'Chalk (petty)', 18: 'Chisel', 19: 'Climbing Spikes', 20: 'Cloak (petty)',
+  21: 'Compass', 22: 'Crowbar', 23: 'Dice', 24: 'Dowsing Rod', 25: 'Explosive',
+  26: 'Fan', 27: 'Fiddle', 28: 'Fire Oil', 29: 'Fishing Rod', 30: 'Flash Powder',
+  31: 'Flour', 32: 'Garrotte', 33: 'Gloves (petty)', 34: 'Glue', 35: 'Goggles',
+  36: 'Grappling Hook', 37: 'Grease', 38: 'Hammer', 39: 'Hammock', 40: 'Hand Drill',
+  41: 'Honey', 42: 'Hourglass', 43: 'Incense', 44: 'Ladder (10 ft, bulky)', 45: 'Lantern',
+  46: 'Leech (restores 1 STR, 3 uses)', 47: 'Lens', 48: 'Lock & Key', 49: 'Lockpick', 50: 'Lodestone',
+  51: 'Lute', 52: 'Magnifying Glass', 53: 'Manacles', 54: 'Marbles', 55: 'Mask',
+  56: 'Metal File', 57: 'Mirror', 58: 'Mugwort', 59: 'Net', 60: 'Oil Can (6 uses)',
+  61: 'Oilskin Bag', 62: 'Pail', 63: 'Paint', 64: 'Parchment & Ink (3 uses)', 65: 'Perfume',
+  66: 'Pickaxe', 67: 'Pipe', 68: 'Pliers', 69: 'Poison', 70: 'Pole (10ft)',
+  71: 'Poncho (petty)', 72: 'Pulley', 73: 'Random Spellbook', 74: 'Rope (25ft)', 75: 'Sack',
+  76: 'Saw', 77: 'Scissors', 78: 'Scroll of Random Spellbook (petty)', 79: 'Sealable Bottle', 80: 'Sedative',
+  81: 'Sewing Kit', 82: 'Sextant', 83: 'Shovel', 84: 'Signal Flag', 85: 'Smokebomb',
+  86: 'Smoking Herbs (3 uses)', 87: 'Songbook', 88: 'Spiked Boots', 89: 'Spyglass', 90: 'Stylus',
+  91: 'Tar', 92: 'Tent (fits 2, bulky)', 93: 'Tongs', 94: 'Trap (d6 STR damage)', 95: 'Wagon (+8 slots, slow)',
+  96: 'Waterproof Bag', 97: 'Whetstone', 98: 'Whistle (petty)', 99: 'Wig', 100: 'Wolfsbane'
+};
+
+// ===== ROLL ARMOR =====
+function rollArmor() {
+  const roll = rollDie(6);
+  const armor = armorTable[roll];
+  character.armor = { roll: roll, ...armor };
+
+  const dieEl = document.getElementById('armor-die');
+  dieEl.textContent = roll;
+  dieEl.classList.add('rolling');
+  setTimeout(() => dieEl.classList.remove('rolling'), 500);
+
+  document.getElementById('armor-result-label').textContent = armor.name;
+  document.getElementById('armor-detail-name').textContent = armor.name;
+  document.getElementById('armor-detail-stats').textContent = armor.note;
+  document.getElementById('armor-detail').style.display = 'block';
+
+  if (roll === 1) {
+    document.getElementById('armor-no-armor-msg').style.display = 'block';
+  } else {
+    document.getElementById('armor-no-armor-msg').style.display = 'none';
+  }
+
+  document.getElementById('btn-step5-next').disabled = false;
+}
+
+// ===== ROLL WEAPON =====
+function rollWeapon() {
+  const roll = rollDie(6);
+  const weapon = weaponsTable[roll];
+  character.weapon = { roll: roll, ...weapon };
+
+  const dieEl = document.getElementById('weapon-die');
+  dieEl.textContent = roll;
+  dieEl.classList.add('rolling');
+  setTimeout(() => dieEl.classList.remove('rolling'), 500);
+
+  document.getElementById('weapon-result-label').textContent = weapon.name.split('(')[0].trim();
+  document.getElementById('weapon-detail-name').textContent = weapon.name;
+  document.getElementById('weapon-detail-stats').textContent = weapon.bulky ? weapon.damage + ', bulky' : weapon.damage;
+  document.getElementById('weapon-detail').style.display = 'block';
+
+  document.getElementById('btn-step6-next').disabled = false;
+}
+
+// ===== CALCULATE ADDITIONAL GEAR ROLLS NEEDED =====
+function calculateAddGearRollsNeeded() {
+  let rolls = 1; // Base: everyone rolls once
+  if (character.armor && character.armor.roll === 1) {
+    rolls += 1; // No armor bonus
+  }
+  if (character.background) {
+    const bgGear = cairnBackgrounds[character.background].gear;
+    if (bgGear.some(g => g.includes('Random Additional Gear'))) {
+      rolls += 1; // Background bonus
+    }
+  }
+  return rolls;
+}
+
+// ===== INIT ADDITIONAL GEAR STEP =====
+function initAdditionalGearStep() {
+  // Calculate rolls needed based on armor and background
+  character.additionalGearRollsNeeded = calculateAddGearRollsNeeded();
+  character.additionalGearRollsCompleted = 0;
+  character.additionalGear = [];
+
+  // Show/hide callouts
+  const noArmor = character.armor && character.armor.roll === 1;
+  document.getElementById('addgear-no-armor-note').style.display = noArmor ? 'block' : 'none';
+
+  let hasBgGear = false;
+  if (character.background) {
+    const bgGear = cairnBackgrounds[character.background].gear;
+    hasBgGear = bgGear.some(g => g.includes('Random Additional Gear'));
+  }
+  document.getElementById('addgear-bg-note').style.display = hasBgGear ? 'block' : 'none';
+
+  // Update roll counter
+  const counterEl = document.getElementById('addgear-roll-counter');
+  const needed = character.additionalGearRollsNeeded;
+  counterEl.textContent = `0 of ${needed} rolls complete`;
+
+  // Update button
+  const btnEl = document.getElementById('btn-roll-addgear');
+  btnEl.textContent = `Roll d100 (1 of ${needed}) 🎒`;
+  btnEl.disabled = false;
+
+  // Reset display
+  document.getElementById('addgear-die').textContent = '?';
+  document.getElementById('addgear-just-rolled').textContent = '—';
+  document.getElementById('addgear-detail').style.display = 'none';
+  document.getElementById('addgear-items-list').innerHTML = '';
+  document.getElementById('btn-step7-next').disabled = true;
+}
+
+// ===== ROLL ADDITIONAL GEAR =====
+function rollAdditionalGear() {
+  const roll = Math.floor(Math.random() * 100) + 1;
+  const gear = additionalGearTable[roll];
+  character.additionalGear.push({ roll: roll, name: gear });
+  character.additionalGearRollsCompleted++;
+
+  const dieEl = document.getElementById('addgear-die');
+  dieEl.textContent = roll;
+  dieEl.classList.add('rolling');
+  setTimeout(() => dieEl.classList.remove('rolling'), 500);
+
+  document.getElementById('addgear-just-rolled').textContent = roll;
+
+  // Update gear items list
+  const listEl = document.getElementById('addgear-items-list');
+  listEl.innerHTML = character.additionalGear.map((g, i) =>
+    `<li style="padding:0.35rem 0; padding-left:1.2rem; position:relative; font-size:0.95rem;">` +
+    `<span style="position:absolute; left:0; color:var(--gold); font-size:0.75rem;">${i + 1}.</span>` +
+    `${g.name} <span style="color:var(--ink-light); font-size:0.8rem;">(d100: ${g.roll})</span>` +
+    `</li>`
+  ).join('');
+  document.getElementById('addgear-detail').style.display = 'block';
+
+  // Update roll counter
+  const completed = character.additionalGearRollsCompleted;
+  const needed = character.additionalGearRollsNeeded;
+  const counterEl = document.getElementById('addgear-roll-counter');
+
+  if (completed < needed) {
+    // More rolls needed
+    const nextRoll = completed + 1;
+    document.getElementById('btn-roll-addgear').textContent = `Roll d100 (${nextRoll} of ${needed}) 🎒`;
+    document.getElementById('btn-roll-addgear').disabled = false;
+    counterEl.textContent = `${completed} of ${needed} rolls complete`;
+  } else {
+    // All rolls done
+    document.getElementById('btn-roll-addgear').disabled = true;
+    document.getElementById('btn-roll-addgear').textContent = 'All rolls complete ✅';
+    counterEl.textContent = `${completed} of ${needed} rolls complete — all done!`;
+    document.getElementById('btn-step7-next').disabled = false;
+  }
+}
+
+// ===== ROLL NAMES =====
+function rollGivenName() {
+  givenNameRoll = Math.floor(Math.random() * 100); // 0-99 index
+  const name = givenNames[givenNameRoll];
+  const displayRoll = givenNameRoll + 1; // 1-100 for display
+
+  const dieEl = document.getElementById('name-given-die');
+  dieEl.textContent = displayRoll;
+  dieEl.classList.add('rolling');
+  setTimeout(() => dieEl.classList.remove('rolling'), 500);
+
+  document.getElementById('name-given-label').textContent = name;
+  updateFullName();
+}
+
+function rollFamilyName() {
+  familyNameRoll = Math.floor(Math.random() * 100); // 0-99 index
+  const name = familyNames[familyNameRoll];
+  const displayRoll = familyNameRoll + 1; // 1-100 for display
+
+  const dieEl = document.getElementById('name-family-die');
+  dieEl.textContent = displayRoll;
+  dieEl.classList.add('rolling');
+  setTimeout(() => dieEl.classList.remove('rolling'), 500);
+
+  document.getElementById('name-family-label').textContent = name;
+  updateFullName();
+}
+
+function rollBothNames() {
+  rollGivenName();
+  setTimeout(() => rollFamilyName(), 150);
+}
+
+function updateFullName() {
+  const givenEl = document.getElementById('name-given-label');
+  const familyEl = document.getElementById('name-family-label');
+  const fullEl = document.getElementById('name-full-display');
+
+  const given = givenEl.textContent;
+  const family = familyEl.textContent;
+
+  if (given !== '—' && family !== '—') {
+    const fullName = given + ' ' + family;
+    character.name = fullName;
+    fullEl.textContent = fullName;
+  } else if (given !== '—') {
+    fullEl.textContent = given + ' ...';
+  } else if (family !== '—') {
+    fullEl.textContent = '... ' + family;
+  } else {
+    fullEl.textContent = '—';
+  }
+
+  checkStep4Complete();
+}
+
+// ===== ROLL GOLD =====
+function rollGold() {
+  const dice = rollDice(3, 6);
+  const total = dice.reduce((a, b) => a + b, 0);
+
+  character.gold = total;
+  character.goldDice = dice;
+
+  // Animate dice
+  for (let i = 0; i < 3; i++) {
+    const dieEl = document.getElementById('gold-d' + (i + 1));
+    dieEl.textContent = dice[i];
+    dieEl.classList.add('rolling');
+    setTimeout(() => dieEl.classList.remove('rolling'), 500);
+  }
+
+  document.getElementById('gold-value').textContent = total;
+  checkStep4Complete();
+}
+
+function checkStep4Complete() {
+  const nameReady = givenNameRoll !== null && familyNameRoll !== null;
+  const goldRolled = character.gold !== null;
+  document.getElementById('btn-step4-next').disabled = !(nameReady && goldRolled);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Background grid no longer needed — using dice roll instead
+});
+
+// ===== FINISH CHARACTER =====
+function finishCharacter() {
+  // Name is already set by rollGivenName/rollFamilyName via updateFullName()
+
+  // Populate sheet
+  document.getElementById('sheet-name').textContent = character.name || 'Nameless Wanderer';
+  document.getElementById('sheet-bg').textContent = cairnBackgrounds[character.background].name;
+
+  document.getElementById('sheet-str').textContent = character.attributes.str;
+  document.getElementById('sheet-dex').textContent = character.attributes.dex;
+  document.getElementById('sheet-wil').textContent = character.attributes.wil;
+
+  document.getElementById('sheet-hp').textContent = character.hp;
+  document.getElementById('sheet-gold').textContent = character.gold + ' gp';
+
+  // Armor & Weapon display
+  const armorData = character.armor;
+  const weaponData = character.weapon;
+  if (armorData) {
+    document.getElementById('sheet-armor').textContent = armorData.name === 'None' ? 'None' : armorData.name + ' (' + armorData.note + ')';
+  }
+  if (weaponData) {
+    document.getElementById('sheet-weapon').textContent = weaponData.name + ' (' + weaponData.damage + ')';
+  }
+
+  // Build gear list
+  const bgKey = character.background;
+  const addGearNames = character.additionalGear.map(ag => ag.name);
+  const bgGearItems = cairnBackgrounds[bgKey].gear;
+  const allGear = [];
+
+  // Add background gear, replacing 'Random Additional Gear' with rolled items
+  bgGearItems.forEach(g => {
+    if (g.includes('Random Additional Gear')) {
+      addGearNames.forEach(name => allGear.push(name));
+    } else {
+      allGear.push(g);
+    }
+  });
+
+  // If no armor (roll=1), add additional gear items not from background replacement
+  if (character.armor && character.armor.roll === 1) {
+    // If background also had Random Additional Gear, items were already added above
+    // If background did NOT have it, all addGear items are the no-armor bonus
+    if (!bgGearItems.some(g => g.includes('Random Additional Gear'))) {
+      addGearNames.forEach(name => allGear.push(name));
+    }
+  }
+
+  // If background had Random Additional Gear but armor was not None,
+  // the bgGearItems.forEach already handled it — no extra adds needed
+  // Edge case: both no-armor AND background bonus — need extra items
+  if (character.armor && character.armor.roll === 1 && bgGearItems.some(g => g.includes('Random Additional Gear'))) {
+    // We already put addGearNames in the bg slot.
+    // But there should be more items for the no-armor bonus.
+    // The array should have both: bg-replacement items + no-armor items.
+    // Since addGearNames contains ALL rolled items, we need to figure out
+    // which are for bg and which are for no-armor.
+    // Simplest: just add all items again since we can't distinguish which roll was which.
+    // Actually — let's just list them all distinctly.
+    // addGearNames already has all items from the forEach above.
+    // No-armor bonus items are the extras beyond what bg needed.
+    // Since we can't distinguish, just include them all once (already done).
+  }
+
+  if (armorData && armorData.name !== 'None') allGear.push(armorData.name);
+  if (weaponData) allGear.push(weaponData.name);
+  allGear.push('Rations (3 uses)');
+  allGear.push('Torch (3 uses)');
+  const gearHtml = allGear.map(g => `<div class="gear-item">${g}</div>`).join('');
+  document.getElementById('sheet-gear').innerHTML = gearHtml;
+
+  goToStep(8);
+}
+
+// ===== PRINT =====
+function printSheet() {
+  window.print();
+}
+
+// ===== RESET =====
+function resetForge() {
+  character.name = '';
+  character.attributes = { str: null, dex: null, wil: null };
+  character.attrDice = { str: [], dex: [], wil: [] };
+  character.hp = null;
+  character.gold = null;
+  character.goldDice = [];
+  character.armor = null;
+  character.weapon = null;
+  character.additionalGear = [];
+  character.additionalGearRollsNeeded = 1;
+  character.additionalGearRollsCompleted = 0;
+  character.background = null;
+
+  // Reset Armor UI
+  document.getElementById('armor-die').textContent = '?';
+  document.getElementById('armor-result-label').textContent = '—';
+  document.getElementById('armor-detail-name').textContent = '—';
+  document.getElementById('armor-detail-stats').textContent = '—';
+  document.getElementById('armor-detail').style.display = 'none';
+  document.getElementById('armor-no-armor-msg').style.display = 'none';
+
+  // Reset Weapon UI
+  document.getElementById('weapon-die').textContent = '?';
+  document.getElementById('weapon-result-label').textContent = '—';
+  document.getElementById('weapon-detail-name').textContent = '—';
+  document.getElementById('weapon-detail-stats').textContent = '—';
+  document.getElementById('weapon-detail').style.display = 'none';
+
+  // Reset Additional Gear UI
+  document.getElementById('addgear-die').textContent = '?';
+  document.getElementById('addgear-just-rolled').textContent = '—';
+  document.getElementById('addgear-detail').style.display = 'none';
+  document.getElementById('addgear-items-list').innerHTML = '';
+  document.getElementById('addgear-roll-counter').textContent = '';
+  document.getElementById('btn-roll-addgear').textContent = 'Roll d100 🎒';
+  document.getElementById('btn-roll-addgear').disabled = false;
+  document.getElementById('addgear-no-armor-note').style.display = 'none';
+  document.getElementById('addgear-bg-note').style.display = 'none';
+
+  // Reset UI
+  ['str', 'dex', 'wil'].forEach(attr => {
+    document.getElementById('val-' + attr).textContent = '—';
+    document.getElementById('dice-' + attr).innerHTML = '';
+    document.getElementById('attr-' + attr).classList.remove('rolled');
+  });
+
+  document.getElementById('hp-die').textContent = '?';
+  document.getElementById('hp-value').textContent = '—';
+  document.getElementById('gold-d1').textContent = '?';
+  document.getElementById('gold-d2').textContent = '?';
+  document.getElementById('gold-d3').textContent = '?';
+  document.getElementById('gold-value').textContent = '—';
+  givenNameRoll = null;
+  familyNameRoll = null;
+  document.getElementById('name-given-die').textContent = '?';
+  document.getElementById('name-family-die').textContent = '?';
+  document.getElementById('name-given-label').textContent = '—';
+  document.getElementById('name-family-label').textContent = '—';
+  document.getElementById('name-full-display').textContent = '—';
+
+  document.getElementById('bg-die').textContent = '?';
+  document.getElementById('bg-die').classList.remove('highlight');
+  document.getElementById('bg-roll-label').textContent = '—';
+  document.getElementById('bg-detail').classList.remove('visible');
+  document.getElementById('btn-reroll-bg').style.display = 'none';
+
+  document.getElementById('btn-step1-next').disabled = true;
+  document.getElementById('btn-step2-next').disabled = true;
+  document.getElementById('btn-step3-next').disabled = true;
+  document.getElementById('btn-step4-next').disabled = true;
+  document.getElementById('btn-step5-next').disabled = true;
+  document.getElementById('btn-step6-next').disabled = true;
+  document.getElementById('btn-step7-next').disabled = true;
+
+  goToStep(0);
+}
+</script>
+
+</body>
+</html>
