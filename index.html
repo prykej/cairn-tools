@@ -1548,7 +1548,7 @@ footer a {
     </div>
 
     <div style="text-align:center; margin-top:1.5rem; display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
-      <button class="btn" onclick="printSheet()">📄 Download PDF (Official Sheet)</button>
+      <button class="btn" id="btn-download-pdf" onclick="printSheet()">📄 Download PDF (Official Sheet)</button>
       <button class="btn btn-red" onclick="resetForge()">🔄 Create New Character</button>
     </div>
   </div>
@@ -1733,7 +1733,7 @@ footer a {
 <!-- ====== FOOTER ====== -->
 <footer>
   <p>Cairn was created by <a href="https://cairnrpg.com" target="_blank" rel="noopener">Yochai Gal</a>. This interactive tutorial is a fan-made tool.</p>
-  <p style="margin-top:0.5rem;">Cairn is free, open-source, and released under a Creative Commons license.</p>
+  <p style="margin-top:0.5rem;">Cairn is free, open-source, and text is <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>.</p>
   <div class="ornament" style="margin-top:1rem;">❧</div>
 </footer>
 
@@ -2425,56 +2425,64 @@ function finishCharacter() {
 
 // ===== PRINT / PDF (Client-side using PDF-lib) =====
 async function printSheet() {
-  const name = document.getElementById('sheet-name').textContent || 'Nameless';
-  const background = document.getElementById('sheet-bg').textContent || '';
-
-  // Get stats from the character object
-  const str = character.attributes.str;
-  const dex = character.attributes.dex;
-  const wil = character.attributes.wil;
-  const hp = character.hp;
-  const gold = character.gold;
-  const armor = character.armor ? character.armor.name : '';
-  const weapon = character.weapon ? `${character.weapon.name} (${character.weapon.damage})` : '';
-
-  // Build gear list for PDF
-  const allGear = [];
-  if (character.background) {
-    const bg = cairnBackgrounds[character.background];
-    const addGearNames = character.additionalGear.map(ag => ag.name);
-    if (bg && bg.gear) {
-      bg.gear.forEach(g => {
-        if (g.includes('Random Additional Gear')) {
-          addGearNames.forEach(name => allGear.push(name));
-        } else {
-          allGear.push(g);
-        }
-      });
-      if (!bg.gear.some(g => g.includes('Random Additional Gear'))) {
-        addGearNames.forEach(name => allGear.push(name));
-      }
-    }
-  }
-  if (armor && armor !== 'None') allGear.push(armor);
-  if (weapon) allGear.push(weapon);
-  allGear.push('Rations (3 uses)', 'Torch (3 uses)');
-
-  const armorValue = character.armor ? character.armor.armor : 0;
-
-  // Build traits list
-  const traitList = [];
-  if (character.traits) {
-    traitList.push(character.traits.physique.value);
-    traitList.push(character.traits.skin.value);
-    traitList.push(character.traits.hair.value);
-    traitList.push(character.traits.face.value);
-    traitList.push(character.traits.speech.value);
-    traitList.push(character.traits.clothing.value);
-    traitList.push(character.traits.virtue.value);
-    traitList.push(character.traits.vice.value);
-  }
+  // Update button state to show loading
+  const btn = document.getElementById('btn-download-pdf');
+  const originalText = btn.textContent;
+  const originalClass = btn.className;
+  btn.textContent = '📄 Filling in Character Sheet...';
+  btn.className = 'btn btn-gold';
+  btn.disabled = true;
 
   try {
+    const name = document.getElementById('sheet-name').textContent || 'Nameless';
+    const background = document.getElementById('sheet-bg').textContent || '';
+
+    // Get stats from the character object
+    const str = character.attributes.str;
+    const dex = character.attributes.dex;
+    const wil = character.attributes.wil;
+    const hp = character.hp;
+    const gold = character.gold;
+    const armor = character.armor ? character.armor.name : '';
+    const weapon = character.weapon ? `${character.weapon.name} (${character.weapon.damage})` : '';
+
+    // Build gear list for PDF
+    const allGear = [];
+    if (character.background) {
+      const bg = cairnBackgrounds[character.background];
+      const addGearNames = character.additionalGear.map(ag => ag.name);
+      if (bg && bg.gear) {
+        bg.gear.forEach(g => {
+          if (g.includes('Random Additional Gear')) {
+            addGearNames.forEach(name => allGear.push(name));
+          } else {
+            allGear.push(g);
+          }
+        });
+        if (!bg.gear.some(g => g.includes('Random Additional Gear'))) {
+          addGearNames.forEach(name => allGear.push(name));
+        }
+      }
+    }
+    if (armor && armor !== 'None') allGear.push(armor);
+    if (weapon) allGear.push(weapon);
+    allGear.push('Rations (3 uses)', 'Torch (3 uses)');
+
+    const armorValue = character.armor ? character.armor.armor : 0;
+
+    // Build traits list
+    const traitList = [];
+    if (character.traits) {
+      traitList.push(character.traits.physique.value);
+      traitList.push(character.traits.skin.value);
+      traitList.push(character.traits.hair.value);
+      traitList.push(character.traits.face.value);
+      traitList.push(character.traits.speech.value);
+      traitList.push(character.traits.clothing.value);
+      traitList.push(character.traits.virtue.value);
+      traitList.push(character.traits.vice.value);
+    }
+
     // Fetch the PDF template
     const templateUrl = 'Cairn-2e-Character-Sheet-Portrait-Letter-Fillable.pdf';
     const templateBytes = await fetch(templateUrl).then(res => res.arrayBuffer());
@@ -2540,6 +2548,11 @@ async function printSheet() {
   } catch (err) {
     console.error('PDF generation failed:', err);
     alert('PDF generation failed: ' + err.message + '\n\nMake sure the PDF template file exists in the same folder as index.html');
+  } finally {
+    // Restore button state
+    btn.textContent = originalText;
+    btn.className = originalClass;
+    btn.disabled = false;
   }
 }
 
